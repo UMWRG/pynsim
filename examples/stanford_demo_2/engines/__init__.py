@@ -15,19 +15,5 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyNSim.  If not, see <http://www.gnu.org/licenses/>.
 
-class Engine(object):
-    name   = "A generic pynsim engine"
-    target = None
-    timestep = None
+from allocation import PyomoAllocation
 
-    def __init__(self, target):
-        self.target = target 
-    
-    def run(self):
-        pass
-
-    def setup(self):
-        pass
-
-    def teardown(self):
-        pass

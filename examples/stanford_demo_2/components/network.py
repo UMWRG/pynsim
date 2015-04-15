@@ -1,3 +1,4 @@
+
 #    (c) Copyright 2014, University of Manchester
 #
 #    This file is part of PyNSim.
@@ -15,19 +16,18 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyNSim.  If not, see <http://www.gnu.org/licenses/>.
 
-class Engine(object):
-    name   = "A generic pynsim engine"
-    target = None
-    timestep = None
+from pynsim import Network
 
-    def __init__(self, target):
-        self.target = target 
-    
-    def run(self):
-        pass
+class StanfordDemoNetwork2(Network):
+    type = 'network'
+    _properties = dict(
+        predicted_rainfall={},
+        rainfall=10,
+    )
 
-    def setup(self):
-        pass
+    def set_initial_storage(self, storage):
+        for node in  self.nodes:
+            if node.type == 'surface reservoir':
+                    node.initial_storage=storage[node.name]
 
-    def teardown(self):
-        pass
+

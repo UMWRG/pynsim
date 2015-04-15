@@ -1,3 +1,4 @@
+
 #    (c) Copyright 2014, University of Manchester
 #
 #    This file is part of PyNSim.
@@ -15,19 +16,17 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyNSim.  If not, see <http://www.gnu.org/licenses/>.
 
-class Engine(object):
-    name   = "A generic pynsim engine"
-    target = None
-    timestep = None
+from pynsim import Link
 
-    def __init__(self, target):
-        self.target = target 
-    
-    def run(self):
-        pass
+class RiverSection(Link):
+    """
+        A simple link type with a max and min flow value.
+        Nothing is currently done with this and is just a demonstration
+        of how to subclass a link.
+    """
 
-    def setup(self):
-        pass
+    _properties = dict(
+        min_flow=None,
+        max_flow=None,
+    )
 
-    def teardown(self):
-        pass
