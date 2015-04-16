@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyNSim Architecture &mdash; PyNSim 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyNSim 1 documentation" href="index.html" />
+    <link rel="next" title="Installing PyNSim" href="install.html" />
+    <link rel="prev" title="Welcome to PyNSim’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installing PyNSim"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to PyNSim’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyNSim 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pynsim-architecture">
+<h1>PyNSim Architecture<a class="headerlink" href="#pynsim-architecture" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="design">
+<h2>Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
+<p>PyNSim consists of three main components: A Simulator, Engine and the network components,
+namely Network, Node, Link and Institution.</p>
+<div class="section" id="network">
+<h3>Network<a class="headerlink" href="#network" title="Permalink to this headline">¶</a></h3>
+<p>A network contains nodes, links and institusions.</p>
+</div>
+<div class="section" id="node">
+<h3>Node<a class="headerlink" href="#node" title="Permalink to this headline">¶</a></h3>
+<p>A node represents a point in the network, normally representing some physical
+building or area of land within the network.</p>
+</div>
+<div class="section" id="link">
+<h3>Link<a class="headerlink" href="#link" title="Permalink to this headline">¶</a></h3>
+<p>At their most simplest, links simply connect nodes, but links can be more
+complex, with different types of links representing different types of connections,
+such as rivers, pipes, streams etc. Links can have their own attribute such as
+flow rate.</p>
+</div>
+<div class="section" id="institution">
+<h3>Institution<a class="headerlink" href="#institution" title="Permalink to this headline">¶</a></h3>
+<p>An institution contains a subset of the nodes and links within a network. An
+institution typically represents a governing body, for example: &#8216;The department
+of water&#8217; or &#8216;The department of agriculture&#8217;. There can be multiple institutions
+within a network and different institutions can contain the same nodes &amp; links.</p>
+</div>
+<div class="section" id="engine">
+<h3>Engine<a class="headerlink" href="#engine" title="Permalink to this headline">¶</a></h3>
+<p>In PyNSim, <strong>an engine is a piece of software which performs some action on
+a resource</strong>. An engine reads values from the nodes and links within an institution,
+performs some calculation and then performs some type of save function, which
+usually sets values back on these nodes and links. These values may then be used
+in a subsequent engine run.</p>
+<p>A n engine must run on one resource, so if a calculation is to be performed on multiple
+nodes and links, they must be contained within an institution.</p>
+</div>
+<div class="section" id="simulator">
+<h3>Simulator<a class="headerlink" href="#simulator" title="Permalink to this headline">¶</a></h3>
+<p>The simulator class is what gets run by a user. It is a container for the
+appropriate models and resources. In a simulator, timesteps are defined
+and the simulation is run. A simulation can be stopped or paused while
+it is running, but will only stop at the end of the currently running
+time step.</p>
+<p>Multiple models can be specified for use in a model, and must be run
+in a specific order. This order is defined when setting up the simulation.</p>
+<p>At each time step in the simulator, all the models are run in order.</p>
+<p>The simulator applies an engine, or a number of engines, to a network over a number of specified
+time steps.</p>
+<p>A simulation if PyNSim has the following workflow:</p>
+<ol class="arabic simple">
+<li>A simulator is created (<a class="reference internal" href="#creating-a-simulator"><em>Creating the simulator</em></a>).</li>
+<li>A network is created and added to the simulatori (<a class="reference internal" href="#defining-the-network"><em>Defining the network</em></a>).</li>
+<li>An engine or number or engines are created (<a class="reference internal" href="#defining-the-engines"><em>Defining the simulators&#8217; engines</em></a>).</li>
+<li>The engines are added to the simulator.</li>
+<li>The timesteps of the simulator are defined.</li>
+<li>The simulator <strong>start()</strong> function is called.</li>
+<li>The simulator iterates over all its timesteps. In each timestep:</li>
+</ol>
+<blockquote>
+<div><ol class="upperalpha simple">
+<li>The <strong>setup()</strong> function of each Institution is called</li>
+<li>The <strong>setup()</strong> function of each Node is called</li>
+<li>The <strong>setup()</strong> function of each Link is called</li>
+<li>The <strong>run()</strong> function of each Engine is called.</li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="8">
+<li>The simulation ends.</li>
+</ol>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/pynsim_flow.png"><img alt="This demonstrates the sequence of actions which occurs in each timestep of a simulation" src="_images/pynsim_flow.png" style="width: 136.4px; height: 120.0px;" /></a>
+</div>
+</div>
+<div class="section" id="setup-functions">
+<span id="id1"></span><h3>Setup Functions<a class="headerlink" href="#setup-functions" title="Permalink to this headline">¶</a></h3>
+<p>Each node, link, network and institution in a pynsim model must implement a &#8216;def setup(self, timestep)&#8217; function.
+This function is run at the start of each timestep <strong>before</strong> the engines are run.
+Setup functions are normally used to assign data to a resource which will be used by engines
+in that time step. For example, a node might say &#8216;&#8217;My demand for this timestep is: 123&#8217;&#8216;. The
+number 123 would normally be found in a pre-defined list or dictionary, which was defined
+when creating the node.</p>
+</div>
+</div>
+<div class="section" id="class-structure">
+<span id="id2"></span><h2>Class Structure<a class="headerlink" href="#class-structure" title="Permalink to this headline">¶</a></h2>
+<div class="figure">
+<img alt="This is a class diagram of PyNSim with some example subclasses displayed at the bottom." src="_images/uml.png" />
+</div>
+<p>This UML diagram of PyNSim shows the different components with different colours.
+The blue box is the Simulator class. This class has exactly one Network and
+can have multiple Models. All resources classes are shown in green. As shown,
+Network, Node, Link and Institution all inherit from Resource.</p>
+<p>The model class, in pink, has a target, which must be a resource.</p>
+<p>The large green box represents the &#8216;core&#8217; elements of PyNSim. These
+elements are meant to be extended for use in specific simulation types.
+This extention can be seen in the light beige box, in which two models types
+are defined alongside two node types, two institution types and a link type.
+We call this set of extentions a &#8216;Generic Multi-Agent Water Model&#8217;.</p>
+<p>When this set of classes is applied to a specific problem, we call it an
+Agent-Based Model</p>
+</div>
+<div class="section" id="defining-custom-types">
+<span id="id3"></span><h2>Defining Custom Types<a class="headerlink" href="#defining-custom-types" title="Permalink to this headline">¶</a></h2>
+<p>The basic components of PyNSim can be extended for use in a specific application.
+For example, if a simulation of supply and demand is being run, two types of Node
+might be &#8216;Surface Reservoir&#8217; (supply) and &#8216;Farm&#8217; (demand). Each of these
+nodes will have its own attributes, for example &#8216;storage&#8217; in the case of the
+reservoir and &#8216;demand&#8217; in the case of the Farm. Links can be extented in much
+the same way; for example a &#8216;River&#8217; is a link, which might have &#8216;maximum flow&#8217;
+and &#8216;minimum&#8217; flow parameters.</p>
+<p>Similarly, custom institutions can be defined, for example: &#8216;The ministry of water&#8217;
+which controls all the nodes and therefore all the nodes in the network are contained
+within it and &#8216;Irrigation Decision Maker&#8217;, which only has control over the demand
+nodes. A model run on each of these insitutions will make decisions (set values)
+about their own nodes and links.</p>
+<p>For an example on how custom types are defined, see here TODO: put in link here.</p>
+</div>
+<div class="section" id="defining-custom-engines">
+<h2>Defining Custom Engines<a class="headerlink" href="#defining-custom-engines" title="Permalink to this headline">¶</a></h2>
+<p>The base engine class must be extended to apply a new type of engine to a simulator.
+Every engine has a &#8216;run&#8217; function, which must implement the actual engine
+run. This may involve writing python code to perform a calculation, but
+most likely it will involve accessing an external modelling system such
+as GAMS. The external model will be run, the results extracted and the
+resource (on which every model must run) updated.</p>
+</div>
+<div class="section" id="example">
+<span id="id4"></span><h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>This example shows how a water department might operate. A water department in our
+example is an instution in charge of all the nodes in the system. Using an allocation
+table, the water department assigns its reservoir a release based on the amount of water in the network at a given time step.</p>
+<p>First, import a basic institution from pynsim:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynsim</span> <span class="kn">import</span> <span class="n">Institution</span>
+</pre></div>
+</div>
+<p>Next create the water department class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">WaterDepartment</span><span class="p">(</span><span class="n">Institution</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Government department in charge of water&quot;</span>
+</pre></div>
+</div>
+<p>The <cite>_properties</cite> parameter of an institution <strong>must</strong> be defined. This defines
+what constitutes a water department:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">_properties</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">flow_requirements</span><span class="o">=</span><span class="p">[],</span>
+    <span class="n">allocation</span>       <span class="o">=</span> <span class="mi">1000</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The water department release curve is an internal parameter to this institution
+and simply maps a reservoir release to an incoming water quantity:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#Based on rainfall in mm, how much will the surface reservoir get?</span>
+<span class="n">_release_curve</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="mi">0</span> <span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">750</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">1250</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">1500</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">1750</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2500</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The next step is the most important part of a pynsim class. It is the setup
+function. This is the place where at each timestep an agent makes decisions about
+what to do. In this case, it finds the incoming water supply and sets the release
+from the reservoir:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">):</span>
+    <span class="n">incoming_water</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">incoming_water_qty</span><span class="p">[</span><span class="n">timestamp</span><span class="p">]</span>
+
+    <span class="n">reservoir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getnodes</span><span class="p">(</span><span class="s">&quot;surface reservoir&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">alloc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_release_curve</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">alloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">incoming_water</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reservoir</span><span class="o">.</span><span class="n">release</span> <span class="o">=</span> <span class="n">alloc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">break</span>
+</pre></div>
+</div>
+<p>To simplify, this function finds a node of a particular type in a network or
+institution:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">getnodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_type</span><span class="p">):</span>
+
+    <span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">agent_type</span><span class="p">:</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nodes</span>
+</pre></div>
+</div>
+<div class="section" id="imports">
+<span id="id5"></span><h3>Imports<a class="headerlink" href="#imports" title="Permalink to this headline">¶</a></h3>
+<p>First, the appropriate node, link and institution types must be imported
+from the desired package. In this example, we use the &#8216;jordanproject&#8217; package:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">agents</span> <span class="kn">import</span> <span class="n">SurfaceReservoir</span><span class="p">,</span> <span class="n">RiverSection</span><span class="p">,</span> <span class="n">CitrusFarm</span><span class="p">,</span> <span class="n">VegetableFarm</span>
+<span class="kn">from</span> <span class="nn">agents</span> <span class="kn">import</span> <span class="n">WaterDepartment</span> <span class="p">,</span> <span class="n">IrrigationDecisionMaker</span>
+</pre></div>
+</div>
+<p>Next, we import the models we want to use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">engines</span> <span class="kn">import</span> <span class="n">DeficitAllocation</span>
+</pre></div>
+</div>
+<p>Finally, import the basic PyNSim stuff, like the simulator and a generic link
+We are assuming that for this example, there is no need to create a special type
+of link, so we use the basic one provided by pynsim:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynsim</span> <span class="kn">import</span> <span class="n">Simulator</span><span class="p">,</span> <span class="n">Network</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-the-simulator">
+<span id="creating-a-simulator"></span><h3>Creating the simulator<a class="headerlink" href="#creating-the-simulator" title="Permalink to this headline">¶</a></h3>
+<p>The simulator file can be found <a class="reference external" href="/home/stephen/git/PyNSim/examples/stanford_demo/wet_year_simulation.py">here</a></p>
+<p>First, create a new simulator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Then define the timesteps the simulator will use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span><span class="o">.</span><span class="n">set_timesteps</span><span class="p">([</span><span class="s">&quot;2014-01-01&quot;</span><span class="p">,</span> <span class="s">&quot;2014-01-02&quot;</span><span class="p">,</span> <span class="s">&quot;2014-01-03&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="defining-the-network">
+<span id="id6"></span><h3>Defining the network<a class="headerlink" href="#defining-the-network" title="Permalink to this headline">¶</a></h3>
+<p>Next, define the network structure by creating a new network, then creating
+the nodes and links:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">n</span> <span class="o">=</span> <span class="n">JordanRiverNetwork</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Example Jordan river network&quot;</span><span class="p">)</span>
+<span class="n">n</span><span class="o">.</span><span class="n">incoming_water_qty</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;2014-01-01&quot;</span> <span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                        <span class="s">&quot;2014-02-01&quot;</span> <span class="p">:</span> <span class="mi">22</span><span class="p">,</span>
+                        <span class="s">&quot;2014-03-01&quot;</span> <span class="p">:</span> <span class="mi">35</span><span class="p">,</span>
+                        <span class="s">&quot;2014-04-01&quot;</span> <span class="p">:</span> <span class="mi">22</span><span class="p">,</span>
+                        <span class="s">&quot;2014-05-01&quot;</span> <span class="p">:</span> <span class="mi">10</span><span class="p">}</span>
+
+<span class="n">irr1</span> <span class="o">=</span> <span class="n">CitrusFarm</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>   <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>   <span class="n">name</span><span class="o">=</span><span class="s">&quot;I1&quot;</span><span class="p">)</span>
+<span class="n">irr2</span> <span class="o">=</span> <span class="n">CitrusFarm</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="n">y</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>  <span class="n">name</span><span class="o">=</span><span class="s">&quot;I2&quot;</span><span class="p">)</span>
+<span class="n">irr3</span> <span class="o">=</span> <span class="n">VegetableFarm</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;I3&quot;</span><span class="p">)</span>
+
+<span class="n">n</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="n">sr1</span><span class="p">,</span> <span class="n">irr1</span><span class="p">,</span> <span class="n">irr2</span><span class="p">,</span> <span class="n">irr3</span><span class="p">)</span>
+
+
+<span class="c">#Create some links</span>
+<span class="n">n</span><span class="o">.</span><span class="n">add_link</span><span class="p">(</span><span class="n">RiverSection</span><span class="p">(</span><span class="n">start_node</span><span class="o">=</span><span class="n">sr1</span><span class="p">,</span> <span class="n">end_node</span><span class="o">=</span><span class="n">irr1</span><span class="p">))</span>
+<span class="n">n</span><span class="o">.</span><span class="n">add_link</span><span class="p">(</span><span class="n">RiverSection</span><span class="p">(</span><span class="n">start_node</span><span class="o">=</span><span class="n">sr1</span><span class="p">,</span> <span class="n">end_node</span><span class="o">=</span><span class="n">irr2</span><span class="p">))</span>
+<span class="n">n</span><span class="o">.</span><span class="n">add_link</span><span class="p">(</span><span class="n">RiverSection</span><span class="p">(</span><span class="n">start_node</span><span class="o">=</span><span class="n">sr1</span><span class="p">,</span> <span class="n">end_node</span><span class="o">=</span><span class="n">irr3</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Next create the institutions in the network:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#The ministry of water has control over all the nodes</span>
+<span class="n">mow</span> <span class="o">=</span> <span class="n">WaterDepartment</span><span class="p">(</span><span class="s">&quot;Jordan Ministry of Water&quot;</span><span class="p">)</span>
+<span class="n">mow</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="n">sr1</span><span class="p">,</span> <span class="n">irr1</span><span class="p">,</span> <span class="n">irr2</span><span class="p">,</span> <span class="n">irr3</span><span class="p">)</span>
+
+<span class="c">#The jordan valley authority has only control over the irrigation nodes</span>
+<span class="n">jva</span> <span class="o">=</span> <span class="n">IrrigationDecisionMaker</span><span class="p">(</span><span class="s">&quot;Jordan Valley Authority&quot;</span><span class="p">)</span>
+<span class="n">jva</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="n">irr1</span><span class="p">,</span> <span class="n">irr2</span><span class="p">,</span> <span class="n">irr3</span><span class="p">)</span>
+
+<span class="n">n</span><span class="o">.</span><span class="n">add_institutions</span><span class="p">(</span><span class="n">mow</span><span class="p">,</span> <span class="n">jva</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Now that the network is completely defined, add the network to the scenario::</dt>
+<dd>s.network = n</dd>
+</dl>
+</div>
+<div class="section" id="defining-the-simulators-engines">
+<span id="defining-the-engines"></span><h3>Defining the simulators&#8217; engines<a class="headerlink" href="#defining-the-simulators-engines" title="Permalink to this headline">¶</a></h3>
+<p>The next step is to introduce all the engines this simulation will use. Remember
+we these have been included above, so adding them to the simulator is a simple
+matter of creating one of each like so, passing in the institution to which the
+model will be applied:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">allocator</span> <span class="o">=</span> <span class="n">DeficitAllocation</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When adding the models to the simulator, it might be necessary to specify an order,
+so that one model is run before another. Do do this, we call the &#8216;add_model&#8217;
+function with a paramater called &#8216;depends_on&#8217;. A model which depends on other models
+can only be run when each of its dependent models are run first:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># flow routing doesn&#39;t depend on any other models</span>
+<span class="n">s</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">allocator</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, start the simulation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To print out the results of the defecit allocation, we look into each irrigation
+node and find out its deficit:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">total_deficit</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&#39;irrigation&#39;</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> deficit = </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">deficit</span><span class="p">)</span>
+        <span class="n">total_deficit</span> <span class="o">+=</span> <span class="n">n</span><span class="o">.</span><span class="n">deficit</span>
+
+<span class="k">print</span> <span class="s">&quot;Total deficit: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">total_deficit</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyNSim Architecture</a><ul>
+<li><a class="reference internal" href="#design">Design</a><ul>
+<li><a class="reference internal" href="#network">Network</a></li>
+<li><a class="reference internal" href="#node">Node</a></li>
+<li><a class="reference internal" href="#link">Link</a></li>
+<li><a class="reference internal" href="#institution">Institution</a></li>
+<li><a class="reference internal" href="#engine">Engine</a></li>
+<li><a class="reference internal" href="#simulator">Simulator</a></li>
+<li><a class="reference internal" href="#setup-functions">Setup Functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#class-structure">Class Structure</a></li>
+<li><a class="reference internal" href="#defining-custom-types">Defining Custom Types</a></li>
+<li><a class="reference internal" href="#defining-custom-engines">Defining Custom Engines</a></li>
+<li><a class="reference internal" href="#example">Example</a><ul>
+<li><a class="reference internal" href="#imports">Imports</a></li>
+<li><a class="reference internal" href="#creating-the-simulator">Creating the simulator</a></li>
+<li><a class="reference internal" href="#defining-the-network">Defining the network</a></li>
+<li><a class="reference internal" href="#defining-the-simulators-engines">Defining the simulators&#8217; engines</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to PyNSim&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installing PyNSim</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/architecture.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installing PyNSim"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to PyNSim’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">PyNSim 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Stephen Knox.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
