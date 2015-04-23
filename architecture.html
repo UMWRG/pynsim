@@ -55,43 +55,103 @@
 <h2>Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
 <p>PyNSim consists of three main components: A Simulator, Engine and the network components,
 namely Network, Node, Link and Institution.</p>
-<div class="section" id="network">
-<h3>Network<a class="headerlink" href="#network" title="Permalink to this headline">¶</a></h3>
-<p>A network contains nodes, links and institusions.</p>
-</div>
 <div class="section" id="node">
 <h3>Node<a class="headerlink" href="#node" title="Permalink to this headline">¶</a></h3>
 <p>A node represents a point in the network, normally representing some physical
-building or area of land within the network.</p>
+building or area of land within the network. A node must have a name and an x, y
+coordinate:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynsim</span> <span class="kn">import</span> <span class="n">Node</span>
+
+<span class="n">n1</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Node 1&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">n2</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Node 2&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c">#the base type identifies this as a node, rather than link for example</span>
+<span class="n">n1</span><span class="o">.</span><span class="n">base_type</span>
+<span class="c">#prints &#39;node&#39;</span>
+
+<span class="c">#The component type is the name of the class</span>
+<span class="n">n1</span><span class="o">.</span><span class="n">component_type</span>
+<span class="c">#prints &#39;Node&#39;</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="link">
 <h3>Link<a class="headerlink" href="#link" title="Permalink to this headline">¶</a></h3>
 <p>At their most simplest, links simply connect nodes, but links can be more
 complex, with different types of links representing different types of connections,
 such as rivers, pipes, streams etc. Links can have their own attribute such as
-flow rate.</p>
+flow rate. A link must have a name and a start and end node.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynsim</span> <span class="kn">import</span> <span class="n">Link</span>
+<span class="n">l1</span> <span class="o">=</span> <span class="n">Link</span><span class="p">(</span><span class="n">start_node</span><span class="o">=</span><span class="n">n1</span><span class="p">,</span> <span class="n">end_node</span><span class="o">=</span><span class="n">n2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;Link 1&quot;</span><span class="p">)</span>
+<span class="n">l1</span><span class="o">.</span><span class="n">base_type</span>
+<span class="c">#prints &#39;link&#39;</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="institution">
 <h3>Institution<a class="headerlink" href="#institution" title="Permalink to this headline">¶</a></h3>
 <p>An institution contains a subset of the nodes and links within a network. An
 institution typically represents a governing body, for example: &#8216;The department
 of water&#8217; or &#8216;The department of agriculture&#8217;. There can be multiple institutions
-within a network and different institutions can contain the same nodes &amp; links.</p>
+within a network and different institutions can contain the same nodes &amp; links:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynsim</span> <span class="kn">import</span> <span class="n">Institution</span>
+<span class="n">inst</span> <span class="o">=</span> <span class="n">Institution</span><span class="p">(</span><span class="s">&quot;All my links&quot;</span><span class="p">)</span>
+
+<span class="n">inst</span><span class="o">.</span><span class="n">base_type</span>
+<span class="c">#prints &#39;institution&#39;</span>
+
+<span class="n">inst</span><span class="o">.</span><span class="n">add_link</span><span class="p">(</span><span class="n">l1</span><span class="p">)</span>
+<span class="n">inst</span><span class="o">.</span><span class="n">nodes</span>
+<span class="c">#print []</span>
+<span class="n">inst</span><span class="o">.</span><span class="n">links</span>
+<span class="c">#prints [Link(name=Link1, start_node=Node1, end_node=Node2)]</span>
+<span class="n">inst</span><span class="o">.</span><span class="n">instititions</span>
+<span class="c">#prints []</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="network">
+<h3>Network<a class="headerlink" href="#network" title="Permalink to this headline">¶</a></h3>
+<p>A network contains nodes, links and institusions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynsim</span> <span class="kn">import</span> <span class="n">Network</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="s">&quot;My example Network&quot;</span><span class="p">)</span>
+
+<span class="n">n</span><span class="o">.</span><span class="n">base_type</span>
+<span class="c">#prints &#39;network&#39;</span>
+
+<span class="n">n</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">)</span>
+<span class="n">n</span><span class="o">.</span><span class="n">add_link</span><span class="p">(</span><span class="n">l1</span><span class="p">)</span>
+<span class="n">n</span><span class="o">.</span><span class="n">add_institution</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+
+<span class="c">#we use shorthand in the comments here for brevity.</span>
+<span class="n">n</span><span class="o">.</span><span class="n">nodes</span>
+<span class="c">#prints [Node(name=Node1, x=0, y=0), Node(name=Node2, x=1, y=1)]</span>
+
+<span class="n">n</span><span class="o">.</span><span class="n">links</span>
+<span class="c">#prints [Link(name=Link1, start_node=Node1, end_node=Node2)]</span>
+<span class="n">n</span><span class="o">.</span><span class="n">institutions</span>
+<span class="c">#prints [Institution(name=All my links)]</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="engine">
 <h3>Engine<a class="headerlink" href="#engine" title="Permalink to this headline">¶</a></h3>
 <p>In PyNSim, <strong>an engine is a piece of software which performs some action on
-a resource</strong>. An engine reads values from the nodes and links within an institution,
+a component</strong>. An engine reads values from the nodes and links within an institution,
 performs some calculation and then performs some type of save function, which
 usually sets values back on these nodes and links. These values may then be used
 in a subsequent engine run.</p>
-<p>A n engine must run on one resource, so if a calculation is to be performed on multiple
-nodes and links, they must be contained within an institution.</p>
+<p>An engine must run on one component, so if a calculation is to be performed on multiple
+nodes and links, they must be contained within an institution:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynsim</span> <span class="kn">import</span> <span class="n">Engine</span>
+<span class="n">e</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="simulator">
 <h3>Simulator<a class="headerlink" href="#simulator" title="Permalink to this headline">¶</a></h3>
 <p>The simulator class is what gets run by a user. It is a container for the
-appropriate models and resources. In a simulator, timesteps are defined
+appropriate models and components. In a simulator, timesteps are defined
 and the simulation is run. A simulation can be stopped or paused while
 it is running, but will only stop at the end of the currently running
 time step.</p>
@@ -122,14 +182,14 @@ time steps.</p>
 <li>The simulation ends.</li>
 </ol>
 <div class="figure">
-<a class="reference internal image-reference" href="_images/pynsim_flow.png"><img alt="This demonstrates the sequence of actions which occurs in each timestep of a simulation" src="_images/pynsim_flow.png" style="width: 136.4px; height: 120.0px;" /></a>
+<a class="reference internal image-reference" href="_images/pynsim_flow.png"><img alt="This demonstrates the sequence of actions which occurs in each timestep of a simulation" src="_images/pynsim_flow.png" style="width: 447.5px; height: 314.0px;" /></a>
 </div>
 </div>
 <div class="section" id="setup-functions">
 <span id="id1"></span><h3>Setup Functions<a class="headerlink" href="#setup-functions" title="Permalink to this headline">¶</a></h3>
 <p>Each node, link, network and institution in a pynsim model must implement a &#8216;def setup(self, timestep)&#8217; function.
 This function is run at the start of each timestep <strong>before</strong> the engines are run.
-Setup functions are normally used to assign data to a resource which will be used by engines
+Setup functions are normally used to assign data to a component which will be used by engines
 in that time step. For example, a node might say &#8216;&#8217;My demand for this timestep is: 123&#8217;&#8216;. The
 number 123 would normally be found in a pre-defined list or dictionary, which was defined
 when creating the node.</p>
@@ -142,9 +202,9 @@ when creating the node.</p>
 </div>
 <p>This UML diagram of PyNSim shows the different components with different colours.
 The blue box is the Simulator class. This class has exactly one Network and
-can have multiple Models. All resources classes are shown in green. As shown,
-Network, Node, Link and Institution all inherit from Resource.</p>
-<p>The model class, in pink, has a target, which must be a resource.</p>
+can have multiple Models. All components classes are shown in green. As shown,
+Network, Node, Link and Institution all inherit from component.</p>
+<p>The model class, in pink, has a target, which must be a component.</p>
 <p>The large green box represents the &#8216;core&#8217; elements of PyNSim. These
 elements are meant to be extended for use in specific simulation types.
 This extention can be seen in the light beige box, in which two models types
@@ -161,7 +221,29 @@ might be &#8216;Surface Reservoir&#8217; (supply) and &#8216;Farm&#8217; (demand
 nodes will have its own attributes, for example &#8216;storage&#8217; in the case of the
 reservoir and &#8216;demand&#8217; in the case of the Farm. Links can be extented in much
 the same way; for example a &#8216;River&#8217; is a link, which might have &#8216;maximum flow&#8217;
-and &#8216;minimum&#8217; flow parameters.</p>
+and &#8216;minimum&#8217; flow parameters:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SurfaceReservoir</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+
+    <span class="n">_properties</span> <span class="o">=</span> <span class="p">{</span>
+       <span class="s">&#39;storage&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="c"># the 0 is the default value</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestep</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Once created:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mynode</span> <span class="o">=</span> <span class="n">SurfaceReservoir</span><span class="p">(</span><span class="s">&quot;An example surface reservoir&quot;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">mynode</span><span class="o">.</span><span class="n">storage</span>
+<span class="c"># print 0, as it is the default</span>
+
+<span class="k">print</span> <span class="n">mynode</span><span class="o">.</span><span class="n">component_type</span>
+<span class="c">#prints &#39;SurfaceReservoir&#39;</span>
+
+<span class="k">print</span> <span class="n">mynode</span><span class="o">.</span><span class="n">base_type</span>
+<span class="c">#prints &#39;node&#39;</span>
+</pre></div>
+</div>
 <p>Similarly, custom institutions can be defined, for example: &#8216;The ministry of water&#8217;
 which controls all the nodes and therefore all the nodes in the network are contained
 within it and &#8216;Irrigation Decision Maker&#8217;, which only has control over the demand
@@ -176,7 +258,7 @@ Every engine has a &#8216;run&#8217; function, which must implement the actual e
 run. This may involve writing python code to perform a calculation, but
 most likely it will involve accessing an external modelling system such
 as GAMS. The external model will be run, the results extracted and the
-resource (on which every model must run) updated.</p>
+component (on which every model must run) updated.</p>
 </div>
 <div class="section" id="example">
 <span id="id4"></span><h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
@@ -364,10 +446,10 @@ node and find out its deficit:</p>
   <ul>
 <li><a class="reference internal" href="#">PyNSim Architecture</a><ul>
 <li><a class="reference internal" href="#design">Design</a><ul>
-<li><a class="reference internal" href="#network">Network</a></li>
 <li><a class="reference internal" href="#node">Node</a></li>
 <li><a class="reference internal" href="#link">Link</a></li>
 <li><a class="reference internal" href="#institution">Institution</a></li>
+<li><a class="reference internal" href="#network">Network</a></li>
 <li><a class="reference internal" href="#engine">Engine</a></li>
 <li><a class="reference internal" href="#simulator">Simulator</a></li>
 <li><a class="reference internal" href="#setup-functions">Setup Functions</a></li>
