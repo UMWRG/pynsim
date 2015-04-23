@@ -43,7 +43,7 @@ class Routing(Engine):
             Q_in += us_n.Q
         node.Q = Q_in
 
-        if node.type == 'Diversion':
+        if node.component_type == 'Diversion':
             abstraction = Q_in
             abstraction[abstraction > node.demand] = node.demand
             node.abstraction = abstraction

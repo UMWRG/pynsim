@@ -27,7 +27,7 @@ class SimpleRouting(Engine):
         next_level = []
         if len(nodes) > 0:
             for node in nodes:
-                if node.type == 'junction':
+                if node.component_type == 'Junction':
                     node.consume()
                     node.allocate()
                 else:

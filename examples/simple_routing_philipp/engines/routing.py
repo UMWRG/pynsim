@@ -20,17 +20,17 @@ class SimpleRouting(Engine):
         node_types = dict()
 
         for i, node in enumerate(self.target.nodes):
-            if node.type not in node_types.keys():
-                node_types[node.type] = [i]
+            if node.component_type not in node_types.keys():
+                node_types[node.component_type] = [i]
             else:
-                node_types[node.type].append(i)
+                node_types[node.component_type].append(i)
 
         link_types = dict()
         for i, link in enumerate(self.target.links):
-            if link.type not in link_types.keys():
-                link_types[link.type] = [i]
+            if link.component_type not in link_types.keys():
+                link_types[link.component_type] = [i]
             else:
-                link_types[link.type].append(i)
+                link_types[link.component_type].append(i)
 
         # Set initial storage for this simulation time step
         init_stor = dict()

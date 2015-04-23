@@ -59,13 +59,13 @@ class WaterDepartment(Institution):
                 reservoir.release = alloc[1]
                 break
     
-    def getnodes(self, agent_type):
+    def getnodes(self, component_type):
         """
             Convenience function to get the nodes in a network of a certain type
         """
         nodes = []
         for n in self.nodes:
-            if n.type == agent_type:
+            if n.type == component_type:
                 nodes.append(n)
         return nodes
 
@@ -88,7 +88,7 @@ class IrrigationDecisionMaker(Institution):
         #find the surface reservoir
         reservoir = None
         for n in self.network.nodes:
-            if n.type == 'surface reservoir':
+            if n.component_type == 'SurfaceReservoir':
                 reservoir = n
                 break
         
@@ -102,9 +102,9 @@ class IrrigationDecisionMaker(Institution):
         
         #Add up the weights.
         for n in self.nodes:
-            if n.agent_type == "CitrusFarm":
+            if n.component_type == "CitrusFarm":
                 weight_sum = weight_sum + citrus_weight
-            elif n.agent_type == "VegetableFarm":
+            elif n.component_type == "VegetableFarm":
                 weight_sum = weight_sum + veg_weight
         
         #Get the proportions of the release per farm based on a simple weighting
@@ -116,7 +116,7 @@ class IrrigationDecisionMaker(Institution):
         #on this time step. The difference between this value and the farmer's
         #demand is the deficit
         for n in self.nodes:
-            if n.agent_type == "CitrusFarm":
+            if n.component_type == "CitrusFarm":
                 n.max_allowed = citrus_release
-            elif n.agent_type == "VegetableFarm":
+            elif n.component_type == "VegetableFarm":
                 n.max_allowed = veg_release 

@@ -21,7 +21,6 @@ class Reservoir(Node):
                 inflow
     """
 
-    type = "Reservoir"
     _properties = {'S': None,
                    'actual_release': None,
                    'min_stor': None,
@@ -36,7 +35,6 @@ class Reservoir(Node):
         self.inflow = self._inflow[t]
 
 class Junction(Node):
-    type = "junction"
     _inflow = {}
     _allocation = {}
     _allocation_priority = None
@@ -97,7 +95,7 @@ class Junction(Node):
         else:
             alloc_volume = allocation
 
-        if link.end_node.type == 'farm':
+        if link.end_node.component_type == 'Farm':
             farm = link.end_node
             alloc_volume = min(farm.demand, alloc_volume)
 
@@ -113,7 +111,6 @@ class Consumption(Node):
         self.deficit = self.demand - self.inflow
 
 class Farm(Consumption):
-    type = "farm"
     _demand = {}
     _properties = {'inflow': None,
                     'deficit' : None,
@@ -122,7 +119,6 @@ class Farm(Consumption):
         self.demand = self._demand.get(timestamp, self._properties['demand'])
 
 class Urban(Consumption):
-    type = "urban"
     _demand = {}
     _properties = {'inflow': None,
                     'deficit' : None,

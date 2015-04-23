@@ -14,7 +14,5 @@ class River(Link):
     implemented.
     """
 
-    type = "River"
-
     def setup(self, t):
         pass

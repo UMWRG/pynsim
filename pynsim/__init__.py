@@ -18,6 +18,6 @@
 
  
 
-from agents import Network, Node, Link, Institution
+from components import Network, Node, Link, Institution
 from engines import Engine
 from simulators import Simulator

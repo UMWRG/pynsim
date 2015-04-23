@@ -20,7 +20,6 @@ class Reservoir(Node):
                 inflow
     """
 
-    type = "Reservoir"
     _properties = {'S': None,
                    'actual_release': None,
                    'min_stor': None,

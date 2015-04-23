@@ -358,15 +358,6 @@ simulation.add_engine(engine)
 
 simulation.start()
 
-# Plot results
-import matplotlib.pyplot as plt
-
 for node in simulation.network.nodes:
     print("%s: %s"%(node.name, node._history['inflow'][0]))
-
-plt.figure(1)
-for i, node in enumerate(simulation.network.nodes):
-    plt.subplot(2, 7, i + 1)
-    plt.plot(node._history['inflow'], 'r')
-    plt.title('%s' % (node.name))
-plt.show()
+simulation.network.plot('inflow')

@@ -29,7 +29,7 @@ def coroutine(func):
     return start
 
 
-class Agent(object):
+class Component(object):
     """
         A top level object, from which Networks, Nodes, Links and Institions
         derive. This object is what a model performs its calculations on.
@@ -41,7 +41,7 @@ class Agent(object):
     _history = dict()
 
     def __init__(self, name, **kwargs):
-        self.agent_type = self.__class__.__name__
+        self.component_type = self.__class__.__name__
         self.name = name
         self._history = dict()
         self._tmp_properties = dict()
@@ -68,7 +68,7 @@ class Agent(object):
 
     def get_properties(self):
         """
-            Get all the properties for this agent (as defined in _properties)
+            Get all the properties for this component (as defined in _properties)
         """
         properties = dict()
         for k in self._properties.keys():
@@ -76,7 +76,7 @@ class Agent(object):
         return properties
 
     def __repr__(self):
-        return "Agent(name=%s)" % (self.name)
+        return "Component(name=%s)" % (self.name)
 
     def pre_process(self):
         """
@@ -88,7 +88,7 @@ class Agent(object):
 
     def setup(self, timestamp):
         """
-            Setup function to be overwritten in each agent implementation
+            Setup function to be overwritten in each component implementation
         """
         pass
 
@@ -101,10 +101,11 @@ class Agent(object):
             self._history[k].append(getattr(self, k))
 
 
-class Network(Agent):
+class Network(Component):
     """
         A container for nodes, links and institutions.
     """
+    base_type = 'network'
 
     def __init__(self, name, **kwargs):
         super(Network, self).__init__(name, **kwargs)
@@ -145,17 +146,17 @@ class Network(Agent):
         """
         return self._link_map.get(link_name)
 
-    def get_links(self, agent_type=None):
+    def get_links(self, component_type=None):
         """
             Get all the links in the network of the specified type
         """
 
-        if agent_type is None:
+        if component_type is None:
             return self.links
 
         links_of_type = []
         for n in self.links:
-            if n.agent_type.lower() == agent_type.lower():
+            if n.component_type.lower() == component_type.lower():
                 links_of_type.append(n)
 
         return links_of_type
@@ -182,17 +183,17 @@ class Network(Agent):
         """
         return self._node_map.get(node_name)
 
-    def get_nodes(self, agent_type=None):
+    def get_nodes(self, component_type=None):
         """
             Get all the nodes in the network of the specified type
         """
 
-        if agent_type is None:
+        if component_type is None:
             return self.nodes
 
         nodes_of_type = []
         for n in self.nodes:
-            if n.agent_type.lower() == agent_type.lower():
+            if n.component_type.lower() == component_type.lower():
                 nodes_of_type.append(n)
 
         return nodes_of_type
@@ -220,17 +221,17 @@ class Network(Agent):
         """
         return self._institution_map.get(institution_name)
 
-    def get_institutions(self, agent_type=None):
+    def get_institutions(self, component_type=None):
         """
             Get all the institutions in the network of the specified type
         """
 
-        if agent_type is None:
+        if component_type is None:
             return self.institutions
 
         institutions_of_type = []
         for n in self.institutions:
-            if n.agent_type.lower() == agent_type.lower():
+            if n.component_type.lower() == component_type.lower():
                 institutions_of_type.append(n)
 
         return institutions_of_type
@@ -369,6 +370,65 @@ class Network(Agent):
             logging.critical("Cannot draw network. Please ensure matplotlib "
                              "and networkx are installed.")
 
+    def plot(self, property_name, block=True):
+        """
+            Plot the history of a property
+            :param The name of the property to be plotted.
+            :param The type of nodes to which this property belongs. 
+                   If this is empty, all nodes and links in the network 
+                   will be checked for this property.
+            :param Stop the current process while displaying the plot. False
+                   to continue the process. If false, make sure the process does not
+                   end of its own accord (by putting in a request for user input, for example)
+                   as the plot will disappear.
+        """
+        #Import seaborn to prettify the graphs if possible 
+        try:
+            import seaborn
+        except:
+            pass
+
+        try:
+            import matplotlib.pyplot as plt
+            nodes_to_plot = []
+            links_to_plot = []
+            institutions_to_plot = []
+            for n in self.nodes:
+                if property_name in n._properties:
+                    nodes_to_plot.append(n)
+            for l in self.links:
+                if property_name in l._properties:
+                    if len(nodes_to_plot) > 0:
+                        print "WARNING: Some nodes have the same property %s as this link %s"% (property_name, l.name)
+                    links_to_plot.append(l)
+            for i in self.institutions:
+                if property_name in i._properties:
+                    if len(nodes_to_plot) > 0 or len(links_to_plot) > 0:
+                        print "WARNING: Some nodes and links have the same property %s as this institution (%s)"% (property_name, i.name)
+                    institutions_to_plot.append(i)
+            
+            components_to_plot = nodes_to_plot + links_to_plot + institutions_to_plot
+
+            if len(components_to_plot) == 0:
+                print "No components found with property %s"%property_name
+                return
+
+            num_cols = 7
+            num_rows = (len(components_to_plot) / 7) + 1
+            plt.figure(1)
+            for i, component in enumerate(components_to_plot):
+                plt.subplot(num_rows, num_cols, i + 1)
+                plt.plot(component._history[property_name], 'r')
+                plt.title('%s' % (component.name))
+            plt.show()
+
+
+        except ImportError, e:
+            logging.critical("Cannot plot %s. Please ensure matplotlib "
+                             "and networkx are installed."%property_name)
+
+
+
     def __repr__(self):
         return "%s(name=%s)" % (self.__class__.__name__, self.name)
 
@@ -470,16 +530,16 @@ class Network(Agent):
             node = (yield ds_links)
 
 
-class Node(Agent):
+class Node(Component):
     """
         A node represents an individual actor in a network, in water resources
         this is normally a single building or small geogrephical area with
         particular characteristics
     """
     #This never changes
-    type='node'
+    base_type='node'
     #This is updated in the __init__ function to the name of the node subclass
-    agent_type = 'node'
+    component_type = 'node'
     network = None
     colour = 'red'
 
@@ -533,14 +593,14 @@ class Node(Agent):
         return self.network._ds_links.send(self)
 
 
-class Link(Agent):
+class Link(Component):
     """
         A link between two nodes.
     """
     #this never changes
-    type='link'
+    base_type='link'
     #This is updated in the __init__ function to the name of the link subclass
-    agent_type = 'link'
+    component_type = 'link'
     network = None
     colour = 'black'
 
@@ -558,7 +618,7 @@ class Link(Agent):
              self.end_node.name)
 
 
-class Institution(Agent):
+class Institution(Component):
     """
         An institution represents a body within a network which controlls
         a subset of the nodes and links in some way. Multiple institutions
@@ -568,10 +628,10 @@ class Institution(Agent):
         Technically, an institution is simply a container for nodes and links.
     """
     #THis never changes
-    type='institution'
+    base_type='institution'
     #This is updated in the __init__ function to be the name of the class
     #of the institution
-    agent_type = 'institution'
+    component_type = 'institution'
     network = None
 
     def __init__(self, name, **kwargs):
@@ -586,32 +646,32 @@ class Institution(Agent):
     def add_node(self, node):
         self.nodes.append(node)
 
-    def get_nodes(self, agent_type=None):
+    def get_nodes(self, component_type=None):
         """
             Get all the nodes in the network of the specified type
         """
 
-        if agent_type is None:
+        if component_type is None:
             return self.nodes
 
         nodes_of_type = []
         for n in self.nodes:
-            if n.agent_type.lower() == agent_type.lower():
+            if n.component_type.lower() == component_type.lower():
                 nodes_of_type.append(n)
 
         return nodes_of_type
 
-    def get_links(self, agent_type=None):
+    def get_links(self, component_type=None):
         """
             Get all the links in the network of the specified type
         """
 
-        if agent_type is None:
+        if component_type is None:
             return self.links
 
         links_of_type = []
         for n in self.links:
-            if n.agent_type.lower() == agent_type.lower():
+            if n.component_type.lower() == component_type.lower():
                 links_of_type.append(n)
 
         return links_of_type
