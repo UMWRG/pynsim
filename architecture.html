@@ -149,9 +149,9 @@ Network, Node, Link and Institution all inherit from Resource.</p>
 elements are meant to be extended for use in specific simulation types.
 This extention can be seen in the light beige box, in which two models types
 are defined alongside two node types, two institution types and a link type.
-We call this set of extentions a &#8216;Generic Multi-Agent Water Model&#8217;.</p>
+We call this set of extentions a &#8216;Generic Water Model&#8217;.</p>
 <p>When this set of classes is applied to a specific problem, we call it an
-Agent-Based Model</p>
+Model</p>
 </div>
 <div class="section" id="defining-custom-types">
 <span id="id3"></span><h2>Defining Custom Types<a class="headerlink" href="#defining-custom-types" title="Permalink to this headline">¶</a></h2>
@@ -219,13 +219,13 @@ and simply maps a reservoir release to an incoming water quantity:</p>
 </pre></div>
 </div>
 <p>The next step is the most important part of a pynsim class. It is the setup
-function. This is the place where at each timestep an agent makes decisions about
+function. This is the place where at each timestep a component makes decisions about
 what to do. In this case, it finds the incoming water supply and sets the release
 from the reservoir:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">):</span>
     <span class="n">incoming_water</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">incoming_water_qty</span><span class="p">[</span><span class="n">timestamp</span><span class="p">]</span>
 
-    <span class="n">reservoir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getnodes</span><span class="p">(</span><span class="s">&quot;surface reservoir&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">reservoir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getnodes</span><span class="p">(</span><span class="s">&quot;SurfaceReservoir&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">for</span> <span class="n">alloc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_release_curve</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">alloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">incoming_water</span><span class="p">:</span>
@@ -237,11 +237,11 @@ from the reservoir:</p>
 </div>
 <p>To simplify, this function finds a node of a particular type in a network or
 institution:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">getnodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_type</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">getnodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component_type</span><span class="p">):</span>
 
     <span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">agent_type</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">component_type</span> <span class="o">==</span> <span class="n">component_type</span><span class="p">:</span>
             <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">nodes</span>
 </pre></div>
@@ -250,8 +250,8 @@ institution:</p>
 <span id="id5"></span><h3>Imports<a class="headerlink" href="#imports" title="Permalink to this headline">¶</a></h3>
 <p>First, the appropriate node, link and institution types must be imported
 from the desired package. In this example, we use the &#8216;jordanproject&#8217; package:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">agents</span> <span class="kn">import</span> <span class="n">SurfaceReservoir</span><span class="p">,</span> <span class="n">RiverSection</span><span class="p">,</span> <span class="n">CitrusFarm</span><span class="p">,</span> <span class="n">VegetableFarm</span>
-<span class="kn">from</span> <span class="nn">agents</span> <span class="kn">import</span> <span class="n">WaterDepartment</span> <span class="p">,</span> <span class="n">IrrigationDecisionMaker</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">components</span> <span class="kn">import</span> <span class="n">SurfaceReservoir</span><span class="p">,</span> <span class="n">RiverSection</span><span class="p">,</span> <span class="n">CitrusFarm</span><span class="p">,</span> <span class="n">VegetableFarm</span>
+<span class="kn">from</span> <span class="nn">components</span> <span class="kn">import</span> <span class="n">WaterDepartment</span> <span class="p">,</span> <span class="n">IrrigationDecisionMaker</span>
 </pre></div>
 </div>
 <p>Next, we import the models we want to use:</p>
@@ -343,7 +343,7 @@ can only be run when each of its dependent models are run first:</p>
 node and find out its deficit:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">total_deficit</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&#39;irrigation&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">component_type</span> <span class="o">==</span> <span class="s">&#39;irrigation&#39;</span><span class="p">:</span>
         <span class="k">print</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> deficit = </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">deficit</span><span class="p">)</span>
         <span class="n">total_deficit</span> <span class="o">+=</span> <span class="n">n</span><span class="o">.</span><span class="n">deficit</span>
 

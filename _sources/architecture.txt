@@ -108,10 +108,10 @@ The large green box represents the 'core' elements of PyNSim. These
 elements are meant to be extended for use in specific simulation types.
 This extention can be seen in the light beige box, in which two models types
 are defined alongside two node types, two institution types and a link type.
-We call this set of extentions a 'Generic Multi-Agent Water Model'. 
+We call this set of extentions a 'Generic Water Model'. 
 
 When this set of classes is applied to a specific problem, we call it an 
-Agent-Based Model
+Model
 
 .. _defining_custom_types:
 
@@ -189,14 +189,14 @@ and simply maps a reservoir release to an incoming water quantity::
      )
 
 The next step is the most important part of a pynsim class. It is the setup
-function. This is the place where at each timestep an agent makes decisions about
+function. This is the place where at each timestep a component makes decisions about
 what to do. In this case, it finds the incoming water supply and sets the release
 from the reservoir::
 
      def setup(self, timestamp):
          incoming_water = self.network.incoming_water_qty[timestamp]
        
-         reservoir = self.getnodes("surface reservoir")[0]
+         reservoir = self.getnodes("SurfaceReservoir")[0]
 
          for alloc in self._release_curve:
              if alloc[0] <= incoming_water:
@@ -208,11 +208,11 @@ from the reservoir::
 To simplify, this function finds a node of a particular type in a network or
 institution::
 
-     def getnodes(self, agent_type):
+     def getnodes(self, component_type):
          
          nodes = []
          for n in self.nodes:
-             if n.type == agent_type:
+             if n.component_type == component_type:
                  nodes.append(n)
          return nodes
 
@@ -224,8 +224,8 @@ Imports
 First, the appropriate node, link and institution types must be imported
 from the desired package. In this example, we use the 'jordanproject' package::
 
- from agents import SurfaceReservoir, RiverSection, CitrusFarm, VegetableFarm
- from agents import WaterDepartment , IrrigationDecisionMaker
+ from components import SurfaceReservoir, RiverSection, CitrusFarm, VegetableFarm
+ from components import WaterDepartment , IrrigationDecisionMaker
 
 Next, we import the models we want to use::
 
@@ -321,7 +321,7 @@ node and find out its deficit::
 
  total_deficit = 0
  for n in n.nodes:
-     if n.type == 'irrigation':
+     if n.component_type == 'irrigation':
          print "%s deficit = %s"%(n.name, n.deficit)
          total_deficit += n.deficit
 
