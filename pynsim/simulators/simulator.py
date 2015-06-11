@@ -20,6 +20,7 @@ class Simulator(object):
     network = None
     def __init__(self, network=None):
         self.engines = []
+        #User defined timeseps
         self.timesteps = []
         self.network=network
 
@@ -36,7 +37,7 @@ class Simulator(object):
             print "No timesteps specified!"
             return
 
-        for timestep in self.timesteps:
+        for idx, timestep in enumerate(self.timesteps):
             self.network.pre_process()
             self.network.set_timestep(timestep)
             self.network.setup(timestep)
@@ -45,6 +46,7 @@ class Simulator(object):
             self.network.setup_nodes(timestep)
             for engine in self.engines:
                 engine.timestep = timestep
+                engine.timestep_idx = idx
                 engine.run()
 
             self.network.post_process()
