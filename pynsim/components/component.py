@@ -101,28 +101,20 @@ class Component(object):
             self._history[k].append(getattr(self, k))
 
 
-class Network(Component):
+class Container(Component):
     """
-        A container for nodes, links and institutions.
+     A container of nodes, links and institutions. The superclass for
+     a network and an institution.
     """
-    base_type = 'network'
-
     def __init__(self, name, **kwargs):
-        super(Network, self).__init__(name, **kwargs)
-        self._node_map = {}
-        self._link_map = {}
-        self._institution_map = {}
+        super(Container, self).__init__(name, **kwargs)
+
         self.nodes = []
         self.links = []
         self.institutions = []
-        self.current_timestep = None
-
-        # Coroutine instances for getting up-/downstream nodes and links
-        # These will be initiated if the function is called the first time
-        self._us_nodes = None
-        self._ds_nodes = None
-        self._us_links = None
-        self._ds_links = None
+        self._node_map = {}
+        self._link_map = {}
+        self._institution_map = {}
 
     def add_link(self, link):
         """
@@ -235,6 +227,28 @@ class Network(Component):
                 institutions_of_type.append(n)
 
         return institutions_of_type
+
+    def __repr__(self):
+        return "%s(name=%s)" % (self.__class__.__name__, self.name)
+
+class Network(Container):
+    """
+        A container for nodes, links and institutions.
+    """
+    base_type = 'network'
+
+    def __init__(self, name, **kwargs):
+        super(Network, self).__init__(name, **kwargs)
+
+        self.current_timestep = None
+
+        # Coroutine instances for getting up-/downstream nodes and links
+        # These will be initiated if the function is called the first time
+        self._us_nodes = None
+        self._ds_nodes = None
+        self._us_links = None
+        self._ds_links = None
+
 
     def set_timestep(self, timestamp):
         """
@@ -618,7 +632,7 @@ class Link(Component):
              self.end_node.name)
 
 
-class Institution(Component):
+class Institution(Container):
     """
         An institution represents a body within a network which controlls
         a subset of the nodes and links in some way. Multiple institutions
@@ -636,60 +650,4 @@ class Institution(Component):
 
     def __init__(self, name, **kwargs):
         super(Institution, self).__init__(name, **kwargs)
-        self.nodes = []
-        self.links = []
-        self.institutions = []
 
-    def add_link(self, link):
-        self.links.append(link)
-
-    def add_node(self, node):
-        self.nodes.append(node)
-
-    def get_nodes(self, component_type=None):
-        """
-            Get all the nodes in the network of the specified type
-        """
-
-        if component_type is None:
-            return self.nodes
-
-        nodes_of_type = []
-        for n in self.nodes:
-            if n.component_type.lower() == component_type.lower():
-                nodes_of_type.append(n)
-
-        return nodes_of_type
-
-    def get_links(self, component_type=None):
-        """
-            Get all the links in the network of the specified type
-        """
-
-        if component_type is None:
-            return self.links
-
-        links_of_type = []
-        for n in self.links:
-            if n.component_type.lower() == component_type.lower():
-                links_of_type.append(n)
-
-        return links_of_type
-
-    def add_links(self, *args):
-        for arg in args:
-            self.links.append(arg)
-
-    def add_nodes(self, *args):
-        for arg in args:
-            self.add_node(arg)
-
-    def add_institution(self, institution):
-        self.institutions.append(institution)
-
-    def add_institutions(self, *args):
-        for institution in args:
-            self.institutions.append(institution)
-
-    def __repr__(self):
-        return "%s(name=%s)" % (self.__class__.__name__, self.name)
