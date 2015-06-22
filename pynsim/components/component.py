@@ -241,6 +241,7 @@ class Network(Container):
         super(Network, self).__init__(name, **kwargs)
 
         self.current_timestep = None
+        self.current_timestep_idx = None
 
         # Coroutine instances for getting up-/downstream nodes and links
         # These will be initiated if the function is called the first time
@@ -250,12 +251,13 @@ class Network(Container):
         self._ds_links = None
 
 
-    def set_timestep(self, timestamp):
+    def set_timestep(self, timestamp, timestep_idx):
         """
             Set the current timestep in the simulation as an attribute
             on the network.
         """
         self.current_timestep = timestamp
+        self.current_timestep_idx = timestep_idx
 
     def setup_institutions(self, timestamp):
         """

@@ -39,7 +39,7 @@ class Simulator(object):
 
         for idx, timestep in enumerate(self.timesteps):
             self.network.pre_process()
-            self.network.set_timestep(timestep)
+            self.network.set_timestep(timestep, idx)
             self.network.setup(timestep)
             self.network.setup_institutions(timestep)
             self.network.setup_links(timestep)
