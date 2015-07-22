@@ -49,29 +49,29 @@ class Component(object):
         for k, v in self._properties.items():
             setattr(self, k, v)
 
-        for k in self._properties.keys():
+        for k in self._properties:
             self._history[k] = []
 
         for k, v in kwargs.items():
-            if k not in self._properties.keys():
+            if k not in self._properties:
                 raise Exception("Invalid property %s. Allowed properties are: %s" % (k, self._properties.keys()))
 
-    def get_history(self, attr_name):
+    def get_history(self, attr_name=None):
         """
             Return a dictionary, keyed on timestep, with each value of the
             attribute at that timestep.
         """
-        if self._history.get(attr_name):
-            return self._history[attr_name]
+        if attr_name is None:
+            return self._history
         else:
-            raise Exception("No history for attribute %s", attr_name)
+            return self._history.get(attr_name, None)
 
     def get_properties(self):
         """
             Get all the properties for this component (as defined in _properties)
         """
         properties = dict()
-        for k in self._properties.keys():
+        for k in self._properties:
             properties[k] = getattr(self, k)
         return properties
 
@@ -83,7 +83,7 @@ class Component(object):
             Save all the current properties in a temporary structure
             so that they are not lost in this time step.
         """
-        for k in self._properties.keys():
+        for k in self._properties:
             self._tmp_properties[k] = getattr(self, k)
 
     def setup(self, timestamp):
@@ -97,7 +97,7 @@ class Component(object):
             Once all the appropriate values have been set, ensure that the
             values from the previous time step is saved for subsequent use.
         """
-        for k in self._tmp_properties.keys():
+        for k in self._tmp_properties:
             self._history[k].append(getattr(self, k))
 
 
@@ -115,6 +115,9 @@ class Container(Component):
         self._node_map = {}
         self._link_map = {}
         self._institution_map = {}
+        self._node_type_map = {}
+        self._link_type_map = {}
+        self._institution_type_map = {}
 
     def add_link(self, link):
         """
@@ -122,6 +125,11 @@ class Container(Component):
         """
         self.links.append(link)
         self._link_map[link.name] = link
+
+        links_of_type = self._link_type_map.get(link.component_type, [])
+        links_of_type.append(link)
+        self._link_type_map[link.component_type] = links_of_type
+
         link.network = self
 
     def add_links(self, *args):
@@ -140,18 +148,14 @@ class Container(Component):
 
     def get_links(self, component_type=None):
         """
-            Get all the links in the network of the specified type
+            Get all the links in the network of the specified type. If no type
+            is specified, return all links.
         """
 
         if component_type is None:
             return self.links
-
-        links_of_type = []
-        for n in self.links:
-            if n.component_type.lower() == component_type.lower():
-                links_of_type.append(n)
-
-        return links_of_type
+        else:
+            return self._link_type_map.get(component_type, [])
 
     def add_node(self, node):
         """
@@ -159,6 +163,11 @@ class Container(Component):
         """
         self.nodes.append(node)
         self._node_map[node.name] = node
+
+        nodes_of_type = self._node_type_map.get(node.component_type, [])
+        nodes_of_type.append(node)
+        self._node_type_map[node.component_type] = nodes_of_type
+
         node.network = self
 
     def add_nodes(self, *args):
@@ -177,18 +186,14 @@ class Container(Component):
 
     def get_nodes(self, component_type=None):
         """
-            Get all the nodes in the network of the specified type
+            Get all the nodes in the network of the specified type. If no type is specified,
+            return all the nodes.
         """
 
         if component_type is None:
             return self.nodes
-
-        nodes_of_type = []
-        for n in self.nodes:
-            if n.component_type.lower() == component_type.lower():
-                nodes_of_type.append(n)
-
-        return nodes_of_type
+        else:
+            return self._node_type_map.get(component_type, [])
 
     def add_institution(self, institution):
         """
@@ -196,6 +201,11 @@ class Container(Component):
         """
         self.institutions.append(institution)
         self._institution_map[institution.name] = institution
+
+        institutions_of_type = self._institution_type_map.get(institution.component_type, [])
+        institutions_of_type.append(institution)
+        self._institution_type_map[institution.component_type] = institutions_of_type
+
         institution.network = self
 
     def add_institutions(self, *args):
@@ -215,18 +225,14 @@ class Container(Component):
 
     def get_institutions(self, component_type=None):
         """
-            Get all the institutions in the network of the specified type
+            Get all the institutions in the network of the specified type. If
+            no type is specified, return all the institutions.
         """
 
         if component_type is None:
             return self.institutions
-
-        institutions_of_type = []
-        for n in self.institutions:
-            if n.component_type.lower() == component_type.lower():
-                institutions_of_type.append(n)
-
-        return institutions_of_type
+        else:
+            return self._institution_type_map.get(component_type, [])
 
     def __repr__(self):
         return "%s(name=%s)" % (self.__class__.__name__, self.name)
@@ -359,6 +365,7 @@ class Network(Container):
         try:
             import matplotlib.pyplot as plt
             import networkx as nx
+
             g = nx.Graph()
             #Nodes
             pos = {}
@@ -410,15 +417,15 @@ class Network(Container):
             links_to_plot = []
             institutions_to_plot = []
             for n in self.nodes:
-                if property_name in n._properties:
+                if property_name in n.get_properties():
                     nodes_to_plot.append(n)
             for l in self.links:
-                if property_name in l._properties:
+                if property_name in l.get_properties():
                     if len(nodes_to_plot) > 0:
                         print "WARNING: Some nodes have the same property %s as this link %s"% (property_name, l.name)
                     links_to_plot.append(l)
             for i in self.institutions:
-                if property_name in i._properties:
+                if property_name in i.get_properties():
                     if len(nodes_to_plot) > 0 or len(links_to_plot) > 0:
                         print "WARNING: Some nodes and links have the same property %s as this institution (%s)"% (property_name, i.name)
                     institutions_to_plot.append(i)
@@ -436,7 +443,7 @@ class Network(Container):
                 plt.subplot(num_rows, num_cols, i + 1)
                 plt.plot(component._history[property_name], 'r')
                 plt.title('%s' % (component.name))
-            plt.show()
+            plt.show(block=block)
 
 
         except ImportError, e:
@@ -478,7 +485,7 @@ class Network(Container):
         _upstream_index = dict()
         node = None
         while True:
-            if node in _upstream_index.keys():
+            if node in _upstream_index:
                 us_nodes = _upstream_index[node]
             else:
                 us_nodes = []
@@ -497,7 +504,7 @@ class Network(Container):
         _downstream_index = dict()
         node = None
         while True:
-            if node in _downstream_index.keys():
+            if node in _downstream_index:
                 ds_nodes = _downstream_index[node]
             else:
                 ds_nodes = []
@@ -516,7 +523,7 @@ class Network(Container):
         _upstream_link_index = dict()
         node = None
         while True:
-            if node in _upstream_link_index.keys():
+            if node in _upstream_link_index:
                 us_links = _upstream_link_index[node]
             else:
                 us_links = []
@@ -535,7 +542,7 @@ class Network(Container):
         _downstream_link_index = dict()
         node = None
         while True:
-            if node in _downstream_link_index.keys():
+            if node in _downstream_link_index:
                 ds_links = _downstream_link_index[node]
             else:
                 ds_links = []
