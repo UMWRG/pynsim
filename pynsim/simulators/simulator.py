@@ -15,6 +15,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyNSim.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 class Simulator(object):
 
     network = None
@@ -29,29 +31,42 @@ class Simulator(object):
         return "Simulator(engines=[%s])"%(my_engines)
 
     def start(self):
+
+        logging.info("Starting simulation")
+
         if self.network is None:
-            print "No network to simulate!"
+            logging.critical("No network to simulate!")
             return
 
         if len(self.timesteps) == 0:
-            print "No timesteps specified!"
+            logging.critical("No timesteps specified!")
             return
 
         for idx, timestep in enumerate(self.timesteps):
             self.network.pre_process()
             self.network.set_timestep(timestep, idx)
+            logging.debug("Setting up network")
             self.network.setup(timestep)
+            
+            logging.debug("Setting up institutions")
             self.network.setup_institutions(timestep)
+            
+            logging.debug("Setting up links")
             self.network.setup_links(timestep)
+            
+            logging.debug("Setting up nodes")
             self.network.setup_nodes(timestep)
+            
+            logging.debug("Starting engines")
             for engine in self.engines:
+                logging.debug("Running engine %s", engine.name)
                 engine.timestep = timestep
                 engine.timestep_idx = idx
                 engine.run()
 
             self.network.post_process()
 
-        #print("Finished")
+        logging.debug("Finished")
 
     def pause(self):
         pass

@@ -422,18 +422,18 @@ class Network(Container):
             for l in self.links:
                 if property_name in l.get_properties():
                     if len(nodes_to_plot) > 0:
-                        print "WARNING: Some nodes have the same property %s as this link %s"% (property_name, l.name)
+                        logging.warn("WARNING: Some nodes have the same property %s as this link %s"% (property_name, l.name))
                     links_to_plot.append(l)
             for i in self.institutions:
                 if property_name in i.get_properties():
                     if len(nodes_to_plot) > 0 or len(links_to_plot) > 0:
-                        print "WARNING: Some nodes and links have the same property %s as this institution (%s)"% (property_name, i.name)
+                        logging.warn("WARNING: Some nodes and links have the same property %s as this institution (%s)"% (property_name, i.name))
                     institutions_to_plot.append(i)
             
             components_to_plot = nodes_to_plot + links_to_plot + institutions_to_plot
 
             if len(components_to_plot) == 0:
-                print "No components found with property %s"%property_name
+                logging.warn("No components found with property %s"%property_name)
                 return
 
             num_cols = 7
