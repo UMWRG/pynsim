@@ -19,6 +19,7 @@ import logging
 import os
 import time
 
+
 class Component(object):
     """
         A top level object, from which Networks, Nodes, Links and Institions
@@ -35,6 +36,10 @@ class Component(object):
         self.name = name
         self._history = dict()
         self._tmp_properties = dict()
+
+        # Track the timing of the setup functions for each node,link and
+        # institution
+        self.timing = {'nodes': {}, 'links': {}, 'institutions': {}}
 
         for k, v in self._properties.items():
             setattr(self, k, v)
