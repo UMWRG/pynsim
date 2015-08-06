@@ -17,7 +17,7 @@
 
 import logging
 import os
-
+import time
 
 def coroutine(func):
     """Coroutine decorator. Source: 'Python Essential Reference' by D.M Beazley
@@ -124,7 +124,13 @@ class Container(Component):
             Add a single link to the network.
         """
         self.links.append(link)
+
+        if link.name in self._link_map:
+            raise Exception("An link with the name %s is already defined. Link names must be unique."%link.name)
+        
         self._link_map[link.name] = link
+
+        self.timing['links'][link.name] = 0
 
         links_of_type = self._link_type_map.get(link.component_type, [])
         links_of_type.append(link)
@@ -162,7 +168,13 @@ class Container(Component):
             Add a single node to the network
         """
         self.nodes.append(node)
+        
+        if node.name in self._node_map:
+            raise Exception("An node with the name %s is already defined. Node names must be unique."%node.name)
+        
         self._node_map[node.name] = node
+        
+        self.timing['nodes'][node.name] = 0
 
         nodes_of_type = self._node_type_map.get(node.component_type, [])
         nodes_of_type.append(node)
@@ -200,7 +212,12 @@ class Container(Component):
             Add a single institutio to the network.
         """
         self.institutions.append(institution)
+        
+        if institution.name in self._institution_map:
+            raise Exception("An institution with the name %s is already defined. Institutions names must be unique."%institution.name)
+
         self._institution_map[institution.name] = institution
+        self.timing['institutions'][institution.name] = 0
 
         institutions_of_type = self._institution_type_map.get(institution.component_type, [])
         institutions_of_type.append(institution)
@@ -246,6 +263,9 @@ class Network(Container):
     def __init__(self, name, **kwargs):
         super(Network, self).__init__(name, **kwargs)
 
+        #Track the timing of the setup functions for each node,link and institution
+        self.timing = {'nodes':{}, 'links':{}, 'institutions':{}}
+
         self.current_timestep = None
         self.current_timestep_idx = None
 
@@ -269,39 +289,67 @@ class Network(Container):
         """
             Call the setup function of each of the institutions in the network
             in turn.
+
+            :returns The time it took to call the function (in seconds)
         """
+        overall_time = time.time()
+
         for i in self.institutions:
             try:
+                individual_time = time.time()
+
                 i.setup(timestamp)
+
+                self.timing['institutions'][i.name] += time.time()-individual_time
             except:
                 logging.critical("An error occurred setting up institution %s "
                                  "(timestamp=%s)", i.name, timestamp)
+
+        total_time = time.time() - overall_time
+
+        return total_time
 
     def setup_links(self, timestamp):
         """
             Call the setup function of each of the links in the network
             in turn.
+            
+            :returns The time it took to call the function (in seconds)
         """
+        overall_time = time.time()
+
         for l in self.links:
             try:
+                individual_time = time.time()
                 l.setup(timestamp)
+                self.timing['links'][l.name] += time.time()-individual_time
             except:
                 logging.critical("An error occurred setting up link %s "
                                  "(timestamp=%s)", l.name, timestamp)
                 raise
 
+        return time.time() - overall_time
+
     def setup_nodes(self, timestamp):
         """
             Call the setup function of each of the nodes in the network
             in turn.
+
+            :returns The time it took to call the function (in seconds)
         """
+        overall_time = time.time()
+
         for n in self.nodes:
             try:
+                individual_time = time.time()
                 n.setup(timestamp)
+                self.timing['nodes'][n.name] += time.time()-individual_time
             except:
                 logging.critical("An error occurred setting up node %s"
                                  " (timestamp=%s)", n.name, timestamp)
                 raise
+
+        return time.time() - overall_time
 
     def pre_process(self):
         """
@@ -391,6 +439,46 @@ class Network(Container):
 
         except ImportError, e:
             logging.critical("Cannot draw network. Please ensure matplotlib "
+                             "and networkx are installed.")
+
+
+    def plot_timing(self, component):
+        """
+         Plot the total time taken to run the setup function of the 
+         components in the network.
+
+         :param one of the following: 'nodes', 'links', 'institutions'
+        """
+        #Import seaborn to prettify the graphs if possible 
+        try:
+            import seaborn
+        except:
+            pass
+
+        try:
+            import matplotlib.pyplot as plt
+
+            width = 0.35
+            
+            s = self.timing[component].values()
+            labels = self.timing[component].keys()
+            t = range(len(s)) #Make a list [0, 1, 2...len(s)]
+            pos = []
+            for x in t:
+                pos.append(x+0.15)
+            
+            fig, ax = plt.subplots()
+            
+            rects1 = ax.bar(t, s, width, color='r')
+            ax.set_xticks(pos)
+            ax.set_xticklabels(labels)
+            ax.set_ylabel('Time')
+            plt.title('Timing')
+
+            plt.show(block=True)
+
+        except ImportError, e:
+            logging.critical("Cannot plot. Please ensure matplotlib "
                              "and networkx are installed.")
 
     def plot(self, property_name, block=True):
