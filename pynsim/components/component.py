@@ -19,16 +19,6 @@ import logging
 import os
 
 
-def coroutine(func):
-    """Coroutine decorator. Source: 'Python Essential Reference' by D.M Beazley
-    """
-    def start(*args, **kwargs):
-        g = func(*args, **kwargs)
-        g.next()
-        return g
-    return start
-
-
 class Component(object):
     """
         A top level object, from which Networks, Nodes, Links and Institions
@@ -68,7 +58,8 @@ class Component(object):
 
     def get_properties(self):
         """
-            Get all the properties for this component (as defined in _properties)
+            Get all the properties for this component (as defined in
+            _properties)
         """
         properties = dict()
         for k in self._properties:
@@ -186,8 +177,8 @@ class Container(Component):
 
     def get_nodes(self, component_type=None):
         """
-            Get all the nodes in the network of the specified type. If no type is specified,
-            return all the nodes.
+            Get all the nodes in the network of the specified type. If no type
+            is specified, return all the nodes.
         """
 
         if component_type is None:
@@ -202,9 +193,11 @@ class Container(Component):
         self.institutions.append(institution)
         self._institution_map[institution.name] = institution
 
-        institutions_of_type = self._institution_type_map.get(institution.component_type, [])
+        institutions_of_type = \
+            self._institution_type_map.get(institution.component_type, [])
         institutions_of_type.append(institution)
-        self._institution_type_map[institution.component_type] = institutions_of_type
+        self._institution_type_map[institution.component_type] = \
+            institutions_of_type
 
         institution.network = self
 
@@ -237,6 +230,7 @@ class Container(Component):
     def __repr__(self):
         return "%s(name=%s)" % (self.__class__.__name__, self.name)
 
+
 class Network(Container):
     """
         A container for nodes, links and institutions.
@@ -248,14 +242,6 @@ class Network(Container):
 
         self.current_timestep = None
         self.current_timestep_idx = None
-
-        # Coroutine instances for getting up-/downstream nodes and links
-        # These will be initiated if the function is called the first time
-        self._us_nodes = None
-        self._ds_nodes = None
-        self._us_links = None
-        self._ds_links = None
-
 
     def set_timestep(self, timestamp, timestep_idx):
         """
@@ -384,7 +370,8 @@ class Network(Container):
                            colour=l.colour)
             colours = [g[a][b]['colour'] for a, b in g.edges()]
 
-            nx.draw_networkx_edges(g,pos, width=2,alpha=0.5,edge_color=colours)
+            nx.draw_networkx_edges(g, pos, width=2, alpha=0.5,
+                                   edge_color=colours)
             mng = plt.get_current_fig_manager()
             mng.resize(1000, 700)
             plt.show(block=block)
@@ -397,15 +384,15 @@ class Network(Container):
         """
             Plot the history of a property
             :param The name of the property to be plotted.
-            :param The type of nodes to which this property belongs. 
-                   If this is empty, all nodes and links in the network 
+            :param The type of nodes to which this property belongs.
+                   If this is empty, all nodes and links in the network
                    will be checked for this property.
             :param Stop the current process while displaying the plot. False
-                   to continue the process. If false, make sure the process does not
-                   end of its own accord (by putting in a request for user input, for example)
-                   as the plot will disappear.
+                   to continue the process. If false, make sure the process
+                   does not end of its own accord (by putting in a request for
+                   user input, for example) as the plot will disappear.
         """
-        #Import seaborn to prettify the graphs if possible 
+        #Import seaborn to prettify the graphs if possible
         try:
             import seaborn
         except:
@@ -429,8 +416,9 @@ class Network(Container):
                     if len(nodes_to_plot) > 0 or len(links_to_plot) > 0:
                         logging.warn("WARNING: Some nodes and links have the same property %s as this institution (%s)"% (property_name, i.name))
                     institutions_to_plot.append(i)
-            
-            components_to_plot = nodes_to_plot + links_to_plot + institutions_to_plot
+
+            components_to_plot = nodes_to_plot + links_to_plot + \
+                institutions_to_plot
 
             if len(components_to_plot) == 0:
                 logging.warn("No components found with property %s"%property_name)
@@ -445,12 +433,9 @@ class Network(Container):
                 plt.title('%s' % (component.name))
             plt.show(block=block)
 
-
         except ImportError, e:
             logging.critical("Cannot plot %s. Please ensure matplotlib "
                              "and networkx are installed."%property_name)
-
-
 
     def __repr__(self):
         return "%s(name=%s)" % (self.__class__.__name__, self.name)
@@ -476,82 +461,6 @@ class Network(Container):
         #create target_dir/group_members.csv
         group_member_file = open(os.path.join(target_dir, 'group_members.csv'))
 
-    @coroutine
-    def _get_upstream_nodes(self):
-        """Get a list of nodes upstream of a node.
-        Usage: usnodes = network.get_upstream_nodes()
-               upstream_nodes = usnodes.send(node)
-        """
-        _upstream_index = dict()
-        node = None
-        while True:
-            if node in _upstream_index:
-                us_nodes = _upstream_index[node]
-            else:
-                us_nodes = []
-                for link in self.links:
-                    if link.end_node == node:
-                        us_nodes.append(link.start_node)
-                _upstream_index[node] = us_nodes
-            node = (yield us_nodes)
-
-    @coroutine
-    def _get_downstream_nodes(self):
-        """Get a list of nodes downstream of a node.
-        Usage: dsnodes = network.get_downstream_nodes()
-               downstream_nodes = dsnodes.send(node)
-        """
-        _downstream_index = dict()
-        node = None
-        while True:
-            if node in _downstream_index:
-                ds_nodes = _downstream_index[node]
-            else:
-                ds_nodes = []
-                for link in self.links:
-                    if link.start_node == node:
-                        ds_nodes.append(link.end_node)
-                _downstream_index[node] = ds_nodes
-            node = (yield ds_nodes)
-
-    @coroutine
-    def _get_upstream_links(self):
-        """Get a list of links upstream of a node.
-        Usage: uslinks = network.get_upstream_links()
-               upstream_links = uslinks.send(node)
-        """
-        _upstream_link_index = dict()
-        node = None
-        while True:
-            if node in _upstream_link_index:
-                us_links = _upstream_link_index[node]
-            else:
-                us_links = []
-                for link in self.links:
-                    if link.end_node == node:
-                        us_links.append(link)
-                _upstream_link_index[node] = us_links
-            node = (yield us_links)
-
-    @coroutine
-    def _get_downstream_links(self):
-        """Get a list of links downstream of a node.
-        Usage: dslinks = network.get_downstream_links()
-               downstream_links = dslinks.send(node)
-        """
-        _downstream_link_index = dict()
-        node = None
-        while True:
-            if node in _downstream_link_index:
-                ds_links = _downstream_link_index[node]
-            else:
-                ds_links = []
-                for link in self.links:
-                    if link.end_node == node:
-                        ds_links.append(link)
-                _downstream_link_index[node] = ds_links
-            node = (yield ds_links)
-
 
 class Node(Component):
     """
@@ -560,7 +469,7 @@ class Node(Component):
         particular characteristics
     """
     #This never changes
-    base_type='node'
+    base_type = 'node'
     #This is updated in the __init__ function to the name of the node subclass
     component_type = 'node'
     network = None
@@ -582,38 +491,30 @@ class Node(Component):
         """Returns a list of all nodes which are *upstream* of the node
         (nodes from where a link leads to this node).
         """
-        if self.network._us_nodes is None:
-            # initialise if not done already
-            self.network._us_nodes = self.network._get_upstream_nodes()
-        return self.network._us_nodes.send(self)
+        return [link.start_node for link in self.in_links]
 
     @property
     def downstream_nodes(self):
         """Returns a list of all nodes which are *downstream* of the node
         (nodes to which a link leads).
         """
-        if self.network._ds_nodes is None:
-            # initialise if not done already
-            self.network._ds_nodes = self.network._get_downstream_nodes()
-        return self.network._ds_nodes.send(self)
+        return [link.end_node for link in self.out_links]
 
     @property
     def upstream_links(self):
         """Returns a list of links whose end node is this node.
+        NOTE: This function exists for compatibility and might be removed in
+              later releases.
         """
-        if self.network._us_links is None:
-            # initialise if not done already
-            self.network._us_links = self.network._get_upstream_links()
-        return self.network._us_links.send(self)
+        return self.in_links
 
     @property
     def downstream_links(self):
         """Returns a list of links whose start node is this node.
+        NOTE: This function exists for compatibility and might be removed in
+              later releases.
         """
-        if self.network._ds_links is None:
-            # initialise if not done already
-            self.network._ds_links = self.network._get_downstream_links()
-        return self.network._ds_links.send(self)
+        return self.out_links
 
 
 class Link(Component):
