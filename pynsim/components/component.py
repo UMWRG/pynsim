@@ -110,9 +110,6 @@ class Container(Component):
         self._link_type_map = {}
         self._institution_type_map = {}
 
-        #Track the timing of the setup functions for each node,link and institution
-        self.timing = {'nodes':{}, 'links':{}, 'institutions':{}}
-
     def add_link(self, link):
         """
             Add a single link to the network.
@@ -124,7 +121,8 @@ class Container(Component):
         
         self._link_map[link.name] = link
 
-        self.timing['links'][link.name] = 0
+        if hasattr(self, 'timing'):
+            self.timing['links'][link.name] = 0
 
         links_of_type = self._link_type_map.get(link.component_type, [])
         links_of_type.append(link)
@@ -168,7 +166,9 @@ class Container(Component):
         
         self._node_map[node.name] = node
         
-        self.timing['nodes'][node.name] = 0
+        #If i'm a network, as opposed to an institution
+        if hasattr(self, 'timing'):
+            self.timing['nodes'][node.name] = 0
 
         nodes_of_type = self._node_type_map.get(node.component_type, [])
         nodes_of_type.append(node)
@@ -211,7 +211,10 @@ class Container(Component):
             raise Exception("An institution with the name %s is already defined. Institutions names must be unique."%institution.name)
 
         self._institution_map[institution.name] = institution
-        self.timing['institutions'][institution.name] = 0
+
+        #If i'm a network, as opposed to an institution
+        if hasattr(self, 'timing'):
+            self.timing['institutions'][institution.name] = 0
 
         institutions_of_type = \
             self._institution_type_map.get(institution.component_type, [])
@@ -259,6 +262,9 @@ class Network(Container):
 
     def __init__(self, name, **kwargs):
         super(Network, self).__init__(name, **kwargs)
+
+        #Track the timing of the setup functions for each node,link and institution
+        self.timing = {'nodes':{}, 'links':{}, 'institutions':{}}
 
         self.current_timestep = None
         self.current_timestep_idx = None
