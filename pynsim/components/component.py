@@ -110,6 +110,9 @@ class Container(Component):
         self._link_type_map = {}
         self._institution_type_map = {}
 
+        #Track the timing of the setup functions for each node,link and institution
+        self.timing = {'nodes':{}, 'links':{}, 'institutions':{}}
+
     def add_link(self, link):
         """
             Add a single link to the network.
@@ -256,9 +259,6 @@ class Network(Container):
 
     def __init__(self, name, **kwargs):
         super(Network, self).__init__(name, **kwargs)
-
-        #Track the timing of the setup functions for each node,link and institution
-        self.timing = {'nodes':{}, 'links':{}, 'institutions':{}}
 
         self.current_timestep = None
         self.current_timestep_idx = None
