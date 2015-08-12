@@ -121,14 +121,14 @@ class Container(Component):
         
         self._link_map[link.name] = link
 
-        if hasattr(self, 'timing'):
+        if self.base_type == 'network':
             self.timing['links'][link.name] = 0
+            link.network = self
 
         links_of_type = self._link_type_map.get(link.component_type, [])
         links_of_type.append(link)
         self._link_type_map[link.component_type] = links_of_type
 
-        link.network = self
 
     def add_links(self, *args):
         """
@@ -167,14 +167,14 @@ class Container(Component):
         self._node_map[node.name] = node
         
         #If i'm a network, as opposed to an institution
-        if hasattr(self, 'timing'):
+        if self.base_type == 'network':
             self.timing['nodes'][node.name] = 0
+            node.network = self
 
         nodes_of_type = self._node_type_map.get(node.component_type, [])
         nodes_of_type.append(node)
         self._node_type_map[node.component_type] = nodes_of_type
 
-        node.network = self
 
     def add_nodes(self, *args):
         """
@@ -213,8 +213,9 @@ class Container(Component):
         self._institution_map[institution.name] = institution
 
         #If i'm a network, as opposed to an institution
-        if hasattr(self, 'timing'):
+        if self.base_type == 'network':
             self.timing['institutions'][institution.name] = 0
+            institution.network = self
 
         institutions_of_type = \
             self._institution_type_map.get(institution.component_type, [])
@@ -222,7 +223,6 @@ class Container(Component):
         self._institution_type_map[institution.component_type] = \
             institutions_of_type
 
-        institution.network = self
 
     def add_institutions(self, *args):
         """
@@ -262,7 +262,7 @@ class Network(Container):
 
     def __init__(self, name, **kwargs):
         super(Network, self).__init__(name, **kwargs)
-
+        
         #Track the timing of the setup functions for each node,link and institution
         self.timing = {'nodes':{}, 'links':{}, 'institutions':{}}
 
