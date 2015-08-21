@@ -35,9 +35,9 @@ irr3 = VegetableFarm(x=100, y=200, name="I3")
 n.add_nodes(sr1, irr1, irr2, irr3)
 
 #Create some links
-n.add_link(RiverSection(start_node=sr1, end_node=irr1))
-n.add_link(RiverSection(start_node=sr1, end_node=irr2))
-n.add_link(RiverSection(start_node=sr1, end_node=irr3))
+n.add_link(RiverSection(name="rs1", start_node=sr1, end_node=irr1))
+n.add_link(RiverSection(name="rs2", start_node=sr1, end_node=irr2))
+n.add_link(RiverSection(name="rs3", start_node=sr1, end_node=irr3))
 
 #Set the simulator's network to this network.
 s.network = n
