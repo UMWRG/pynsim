@@ -8,7 +8,7 @@
     
     <title>PyNSim Architecture &mdash; PyNSim 1 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -25,29 +25,18 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="PyNSim 1 documentation" href="index.html" />
     <link rel="next" title="Installing PyNSim" href="install.html" />
-    <link rel="prev" title="Welcome to PyNSim’s documentation!" href="index.html" /> 
+    <link rel="prev" title="Welcome to PyNSim’s documentation!" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
   </head>
-  <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="install.html" title="Installing PyNSim"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="index.html" title="Welcome to PyNSim’s documentation!"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNSim 1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>  
+  <body role="document">  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="pynsim-architecture">
 <h1>PyNSim Architecture<a class="headerlink" href="#pynsim-architecture" title="Permalink to this headline">¶</a></h1>
@@ -162,9 +151,9 @@ in a specific order. This order is defined when setting up the simulation.</p>
 time steps.</p>
 <p>A simulation if PyNSim has the following workflow:</p>
 <ol class="arabic simple">
-<li>A simulator is created (<a class="reference internal" href="#creating-a-simulator"><em>Creating the simulator</em></a>).</li>
-<li>A network is created and added to the simulatori (<a class="reference internal" href="#defining-the-network"><em>Defining the network</em></a>).</li>
-<li>An engine or number or engines are created (<a class="reference internal" href="#defining-the-engines"><em>Defining the simulators&#8217; engines</em></a>).</li>
+<li>A simulator is created (<a class="reference internal" href="#creating-a-simulator"><span>Creating the simulator</span></a>).</li>
+<li>A network is created and added to the simulatori (<a class="reference internal" href="#defining-the-network"><span>Defining the network</span></a>).</li>
+<li>An engine or number or engines are created (<a class="reference internal" href="#defining-the-engines"><span>Defining the simulators&#8217; engines</span></a>).</li>
 <li>The engines are added to the simulator.</li>
 <li>The timesteps of the simulator are defined.</li>
 <li>The simulator <strong>start()</strong> function is called.</li>
@@ -358,6 +347,18 @@ of link, so we use the basic one provided by pynsim:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">s</span><span class="o">.</span><span class="n">set_timesteps</span><span class="p">([</span><span class="s">&quot;2014-01-01&quot;</span><span class="p">,</span> <span class="s">&quot;2014-01-02&quot;</span><span class="p">,</span> <span class="s">&quot;2014-01-03&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
+<p>Instead of defining a list of timesteps it is also possible to let the function
+generate a time index. Three out of four optional arguments need to be
+supplied:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span><span class="o">.</span><span class="n">set_timesteps</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="s">&#39;2014-01-01 00:00&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span><span class="o">.</span><span class="n">set_timesteps</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="s">&#39;2014-01-01 00:00&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">end_time</span><span class="o">=</span><span class="s">&#39;2014-01-03 00:00&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For more information about defining a time index, please refer to the <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/timeseries.html">Pandas
+documentation</a>.</p>
 </div>
 <div class="section" id="defining-the-network">
 <span id="id6"></span><h3>Defining the network<a class="headerlink" href="#defining-the-network" title="Permalink to this headline">¶</a></h3>
@@ -403,18 +404,18 @@ the nodes and links:</p>
 <div class="section" id="defining-the-simulators-engines">
 <span id="defining-the-engines"></span><h3>Defining the simulators&#8217; engines<a class="headerlink" href="#defining-the-simulators-engines" title="Permalink to this headline">¶</a></h3>
 <p>The next step is to introduce all the engines this simulation will use. Remember
-we these have been included above, so adding them to the simulator is a simple
+these have been included above, so adding them to the simulator is a simple
 matter of creating one of each like so, passing in the institution to which the
 model will be applied:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">allocator</span> <span class="o">=</span> <span class="n">DeficitAllocation</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>When adding the models to the simulator, it might be necessary to specify an order,
-so that one model is run before another. Do do this, we call the &#8216;add_model&#8217;
+<p>When adding engines to the simulator, it might be necessary to specify an order,
+so that one engine is run before another. Do do this, we call the &#8216;add_engine&#8217;
 function with a paramater called &#8216;depends_on&#8217;. A model which depends on other models
 can only be run when each of its dependent models are run first:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># flow routing doesn&#39;t depend on any other models</span>
-<span class="n">s</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">allocator</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># flow routing doesn&#39;t depend on any other engine</span>
+<span class="n">s</span><span class="o">.</span><span class="n">add_engine</span><span class="p">(</span><span class="n">allocator</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Finally, start the simulation:</p>
@@ -440,7 +441,7 @@ node and find out its deficit:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -468,19 +469,23 @@ node and find out its deficit:</p>
 </ul>
 </li>
 </ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to PyNSim&#8217;s documentation!</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="install.html"
-                        title="next chapter">Installing PyNSim</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/architecture.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to PyNSim&#8217;s documentation!</a></li>
+      <li>Next: <a href="install.html" title="next chapter">Installing PyNSim</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/architecture.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -497,24 +502,20 @@ node and find out its deficit:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="install.html" title="Installing PyNSim"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="index.html" title="Welcome to PyNSim’s documentation!"
-             >previous</a> |</li>
-        <li><a href="index.html">PyNSim 1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>
     <div class="footer">
-        &copy; Copyright 2014, Stephen Knox.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      &copy;2014, Stephen Knox.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/architecture.txt"
+          rel="nofollow">Page source</a>
     </div>
+
+    
+
+    
   </body>
 </html>
