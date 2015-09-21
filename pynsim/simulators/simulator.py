@@ -60,17 +60,11 @@ class Simulator(object):
             self.network.setup(timestep)
             self.timing['network'] += time.time() - t
             
-            logging.debug("Setting up institutions")
-            t = self.network.setup_institutions(timestep)
-            self.timing['institutions'] += t
-            
-            logging.debug("Setting up links")
-            t = self.network.setup_links(timestep)
-            self.timing['links'] += t
-            
-            logging.debug("Setting up nodes")
-            t = self.network.setup_nodes(timestep)
-            self.timing['nodes'] += t
+            logging.debug("Setting up components")
+            setup_timing = self.network.setup_components(timestep)
+            self.timing['institutions'] += setup_timing['institutions']
+            self.timing['links']        += setup_timing['links']
+            self.timing['nodes']        += setup_timing['nodes']
             
             logging.debug("Starting engines")
             for engine in self.engines:
@@ -110,6 +104,55 @@ class Simulator(object):
             plt.title('Timing')
 
             plt.show(block=True)
+
+        except ImportError, e:
+            logging.critical("Cannot plot. Please ensure matplotlib "
+                             "and networkx are installed.")
+
+    def plot_engine_timing(self):
+        """
+        """
+        #Import seaborn to prettify the graphs if possible 
+        try:
+            import seaborn
+        except:
+            pass
+        try:
+            import matplotlib.pyplot as plt
+
+            width = 0.35
+            
+            s = self.timing['engines'].values()
+            names = self.timing['engines'].keys()
+            plt_axes = []
+            plt_axes_offset = []
+            for i, n in enumerate(names):
+                plt_axes.append(i)
+                plt_axes_offset.append(i+0.15)
+
+            
+            fig, ax = plt.subplots()
+            
+            rects1 = ax.bar(plt_axes, s, width, color='r')
+            ax.set_xticks(plt_axes_offset)
+            ax.set_xticklabels(list(names))
+            ax.set_ylabel('Time')
+            plt.title('Timing')
+
+            try:
+                import mpld3
+                i=0
+                for r in rects1:
+                    tooltip = mpld3.plugins.LineLabelTooltip(r, label=names[i])
+                    mpld3.plugins.connect(fig, tooltip)
+                    i = i + 1
+                mpld3.show()
+            except Exception, e:
+                logging.exception(e)
+                logging.warn("For tooltips, install mpld3 (pip install mpld3)")
+                plt.show(block=True)
+
+            
 
         except ImportError, e:
             logging.critical("Cannot plot. Please ensure matplotlib "
