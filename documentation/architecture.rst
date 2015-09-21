@@ -332,6 +332,19 @@ Then define the timesteps the simulator will use::
 
  s.set_timesteps(["2014-01-01", "2014-01-02", "2014-01-03"])
 
+Instead of defining a list of timesteps it is also possible to let the function
+generate a time index. Three out of four optional arguments need to be
+supplied::
+
+ s.set_timesteps(None, start_time='2014-01-01 00:00', frequency='d', periods=3)
+
+or::
+
+ s.set_timesteps(None, start_time='2014-01-01 00:00', frequency='d', end_time='2014-01-03 00:00')
+
+For more information about defining a time index, please refer to the `Pandas
+documentation <http://pandas.pydata.org/pandas-docs/stable/timeseries.html>`_.
+
 .. _defining_the_network:
 
 Defining the network
@@ -378,19 +391,19 @@ Now that the network is completely defined, add the network to the scenario::
 Defining the simulators' engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The next step is to introduce all the engines this simulation will use. Remember
-we these have been included above, so adding them to the simulator is a simple
+these have been included above, so adding them to the simulator is a simple
 matter of creating one of each like so, passing in the institution to which the 
 model will be applied::
 
  allocator = DeficitAllocation(n)
 
-When adding the models to the simulator, it might be necessary to specify an order,
-so that one model is run before another. Do do this, we call the 'add_model'
+When adding engines to the simulator, it might be necessary to specify an order,
+so that one engine is run before another. Do do this, we call the 'add_engine'
 function with a paramater called 'depends_on'. A model which depends on other models
 can only be run when each of its dependent models are run first::
 
- # flow routing doesn't depend on any other models
- s.add_model(allocator) 
+ # flow routing doesn't depend on any other engine
+ s.add_engine(allocator) 
 
 Finally, start the simulation::
 
