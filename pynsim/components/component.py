@@ -39,8 +39,6 @@ class Component(object):
 
         for k, v in self._properties.items():
             setattr(self, k, v)
-
-        for k in self._properties:
             self._history[k] = []
 
         for k, v in kwargs.items():
@@ -70,27 +68,11 @@ class Component(object):
     def __repr__(self):
         return "Component(name=%s)" % (self.name)
 
-    def pre_process(self):
-        """
-            Save all the current properties in a temporary structure
-            so that they are not lost in this time step.
-        """
-        for k in self._properties:
-            self._tmp_properties[k] = getattr(self, k)
-
     def setup(self, timestamp):
         """
             Setup function to be overwritten in each component implementation
         """
         pass
-
-    def post_process(self):
-        """
-            Once all the appropriate values have been set, ensure that the
-            values from the previous time step is saved for subsequent use.
-        """
-        for k in self._tmp_properties:
-            self._history[k].append(getattr(self, k))
 
 
 class Container(Component):
@@ -99,6 +81,17 @@ class Container(Component):
      a network and an institution.
     """
     def __init__(self, name, **kwargs):
+        #Allow 'nodes' 'links' and 'instutions' to be special case keywords
+        nodes = kwargs.get('nodes', [])
+        if nodes:
+            del kwargs['nodes']
+        links = kwargs.get('links', [])
+        if links:
+            del kwargs['links']
+        institutions = kwargs.get('institutions', [])
+        if institutions:
+            del kwargs['institutions']
+
         super(Container, self).__init__(name, **kwargs)
 
         self.components = []
@@ -112,6 +105,10 @@ class Container(Component):
         self._node_type_map = {}
         self._link_type_map = {}
         self._institution_type_map = {}
+
+        self.add_nodes(*nodes)
+        self.add_links(*links)
+        self.add_institutions(*institutions)
 
     def add_link(self, link):
         """
@@ -320,7 +317,7 @@ class Network(Container):
         self.current_timestep = timestamp
         self.current_timestep_idx = timestep_idx
 
-    def setup_components(self, timestamp):
+    def setup_components(self, timestamp, record_time=False):
         """
             Call the setup function of each of the nodes in the network
             in turn.
@@ -329,49 +326,48 @@ class Network(Container):
         """
 
         time_dict = {'nodes':0, 'links':0, 'institutions':0, 'unknown':0}
+
+        for k in self._properties:
+            self._history[k].append(getattr(self, k))
+
+
+
         for c in self.components:
+            #removed the component's 'pre_process' function for efficiency
+            for k in c._properties:
+                c._history[k].append(getattr(c, k))
+
             try:
-                individual_time = time.time()
+
+                if record_time is True:
+                    individual_time = time.time()
+                
                 c.setup(timestamp)
 
-                #Compile the timing dictionary
-                setup_time = time.time()-individual_time
-                if c.base_type == 'node':
-                    self.timing['nodes'][c.name] += setup_time
-                    time_dict['nodes'] += setup_time
-                elif c.base_type == 'link':
-                    self.timing['links'][c.name] += setup_time
-                    time_dict['links'] += setup_time
-                elif c.base_type == 'institution':
-                    self.timing['institutions'][c.name] += setup_time
-                    time_dict['institutions'] += setup_time
-                elif c.base_type == 'component':
-                    self.timing['unknown'][c.name] += setup_time
-                    time_dict['unknown'] += setup_time
+                for k in self._tmp_properties:
+                    self._history[k].append(getattr(self, k))
+
+                if record_time is True:
+                    #Compile the timing dictionary
+                    setup_time = time.time()-individual_time
+                    if c.base_type == 'node':
+                        self.timing['nodes'][c.name] += setup_time
+                        time_dict['nodes'] += setup_time
+                    elif c.base_type == 'link':
+                        self.timing['links'][c.name] += setup_time
+                        time_dict['links'] += setup_time
+                    elif c.base_type == 'institution':
+                        self.timing['institutions'][c.name] += setup_time
+                        time_dict['institutions'] += setup_time
+                    elif c.base_type == 'component':
+                        self.timing['unknown'][c.name] += setup_time
+                        time_dict['unknown'] += setup_time
             except:
                 logging.critical("An error occurred setting up node %s"
                                  " (timestamp=%s)", c.name, timestamp)
                 raise
 
         return time_dict
-
-    def pre_process(self):
-        """
-            Pre-process the entire network. This is run before the setup
-            function, and saves the current attribute values into a temporary
-            state.
-        """
-        super(Network, self).pre_process()
-        for c in self.components:
-            c.pre_process()
-
-    def post_process(self):
-        """
-            Post process the entire network. Saves any properties to history.
-        """
-        super(Network, self).post_process()
-        for c in self.components:
-            c.post_process()
 
     @property
     def connectivity(self):

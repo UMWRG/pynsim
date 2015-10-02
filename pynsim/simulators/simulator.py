@@ -21,14 +21,17 @@ import time
 
 import pandas as pd
 
+import multiprocessing
+
 
 class Simulator(object):
 
     network = None
-    def __init__(self, network=None):
+    def __init__(self, network=None, time=False):
         self.engines = []
         #User defined timeseps
         self.timesteps = []
+        self.time = time
         self.network=network
         #Track the cumilative time of the setup functions for the network, nodes
         #links and institutions. Also tracks the cumulative time of each engine run. This dict should show where a slow-down is occurring. For more details, the
@@ -55,7 +58,6 @@ class Simulator(object):
             return
 
         for idx, timestep in enumerate(self.timesteps):
-            self.network.pre_process()
             self.network.set_timestep(timestep, idx)
 
             logging.debug("Setting up network")
@@ -64,21 +66,26 @@ class Simulator(object):
             self.timing['network'] += time.time() - t
             
             logging.debug("Setting up components")
-            setup_timing = self.network.setup_components(timestep)
-            self.timing['institutions'] += setup_timing['institutions']
-            self.timing['links']        += setup_timing['links']
-            self.timing['nodes']        += setup_timing['nodes']
+            setup_timing = self.network.setup_components(timestep, self.time)
+
+            if self.time:
+                self.timing['institutions'] += setup_timing['institutions']
+                self.timing['links']        += setup_timing['links']
+                self.timing['nodes']        += setup_timing['nodes']
 
             logging.debug("Starting engines")
             for engine in self.engines:
                 logging.debug("Running engine %s", engine.name)
-                t = time.time()
+
+                if self.time:
+                    t = time.time()
+
                 engine.timestep = timestep
                 engine.timestep_idx = idx
                 engine.run()
-                self.timing['engines'][engine.name] += time.time()-t
 
-            self.network.post_process()
+                if self.time:
+                    self.timing['engines'][engine.name] += time.time()-t
 
         logging.debug("Finished")
 
