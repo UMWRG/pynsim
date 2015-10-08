@@ -26,6 +26,7 @@ class Component(object):
     """
     name = None
     description = None
+    base_type = 'component'
     _properties = dict()
     _tmp_properties = dict()
     _history = dict()
@@ -100,12 +101,14 @@ class Container(Component):
     def __init__(self, name, **kwargs):
         super(Container, self).__init__(name, **kwargs)
 
+        self.components = []
         self.nodes = []
         self.links = []
         self.institutions = []
         self._node_map = {}
         self._link_map = {}
         self._institution_map = {}
+        self._component_map = {}
         self._node_type_map = {}
         self._link_type_map = {}
         self._institution_type_map = {}
@@ -114,7 +117,18 @@ class Container(Component):
         """
             Add a single link to the network.
         """
+
+        if link.start_node is None:
+            raise Exception("A link must have a start node")
+        if link.end_node is None:
+            raise Exception("A link must have an end node")
+        if link.name is None:
+            default_link_name = link.start_node.name + " . " + link.end_node.name
+            link.name = default_link_name
+            logging.debug("No link name specified, defaulting to:%s", link.name)
+
         self.links.append(link)
+        self.components.append(link)
 
         if link.name in self._link_map:
             raise Exception("An link with the name %s is already defined. Link names must be unique."%link.name)
@@ -160,6 +174,7 @@ class Container(Component):
             Add a single node to the network
         """
         self.nodes.append(node)
+        self.components.append(node)
         
         if node.name in self._node_map:
             raise Exception("An node with the name %s is already defined. Node names must be unique."%node.name)
@@ -206,6 +221,7 @@ class Container(Component):
             Add a single institutio to the network.
         """
         self.institutions.append(institution)
+        self.components.append(institution)
         
         if institution.name in self._institution_map:
             raise Exception("An institution with the name %s is already defined. Institutions names must be unique."%institution.name)
@@ -250,6 +266,33 @@ class Container(Component):
         else:
             return self._institution_type_map.get(component_type, [])
 
+    def add_component(self, component):
+        """
+            Add a single component to the network.
+        """
+    
+        self.components.append(component)
+        
+        if component.name in self._component_map:
+            raise Exception("An component with the name %s is already defined. Component names must be unique."%component.name)
+
+        self._component_map[component.name] = component
+
+        #If i'm a network, as opposed to a component, then setup timing parameters, and set
+        #the network parameter
+        if self.base_type == 'network':
+            self.timing['unknown'][component.name] = 0
+            component.network = self
+
+    def add_components(self, *args):
+        """
+            Add multiple generic components to the network, like so:
+            net.add_components(inst1, inst2)
+        """
+        for component in args:
+            self.add_component(component)
+
+
     def __repr__(self):
         return "%s(name=%s)" % (self.__class__.__name__, self.name)
 
@@ -264,7 +307,7 @@ class Network(Container):
         super(Network, self).__init__(name, **kwargs)
         
         #Track the timing of the setup functions for each node,link and institution
-        self.timing = {'nodes':{}, 'links':{}, 'institutions':{}}
+        self.timing = {'nodes':{}, 'links':{}, 'institutions':{}, 'unknown':{}}
 
         self.current_timestep = None
         self.current_timestep_idx = None
@@ -277,71 +320,40 @@ class Network(Container):
         self.current_timestep = timestamp
         self.current_timestep_idx = timestep_idx
 
-    def setup_institutions(self, timestamp):
-        """
-            Call the setup function of each of the institutions in the network
-            in turn.
-
-            :returns The time it took to call the function (in seconds)
-        """
-        overall_time = time.time()
-
-        for i in self.institutions:
-            try:
-                individual_time = time.time()
-
-                i.setup(timestamp)
-
-                self.timing['institutions'][i.name] += time.time()-individual_time
-            except:
-                logging.critical("An error occurred setting up institution %s "
-                                 "(timestamp=%s)", i.name, timestamp)
-
-        total_time = time.time() - overall_time
-
-        return total_time
-
-    def setup_links(self, timestamp):
-        """
-            Call the setup function of each of the links in the network
-            in turn.
-            
-            :returns The time it took to call the function (in seconds)
-        """
-        overall_time = time.time()
-
-        for l in self.links:
-            try:
-                individual_time = time.time()
-                l.setup(timestamp)
-                self.timing['links'][l.name] += time.time()-individual_time
-            except:
-                logging.critical("An error occurred setting up link %s "
-                                 "(timestamp=%s)", l.name, timestamp)
-                raise
-
-        return time.time() - overall_time
-
-    def setup_nodes(self, timestamp):
+    def setup_components(self, timestamp):
         """
             Call the setup function of each of the nodes in the network
             in turn.
 
             :returns The time it took to call the function (in seconds)
         """
-        overall_time = time.time()
 
-        for n in self.nodes:
+        time_dict = {'nodes':0, 'links':0, 'institutions':0, 'unknown':0}
+        for c in self.components:
             try:
                 individual_time = time.time()
-                n.setup(timestamp)
-                self.timing['nodes'][n.name] += time.time()-individual_time
+                c.setup(timestamp)
+
+                #Compile the timing dictionary
+                setup_time = time.time()-individual_time
+                if c.base_type == 'node':
+                    self.timing['nodes'][c.name] += setup_time
+                    time_dict['nodes'] += setup_time
+                elif c.base_type == 'link':
+                    self.timing['links'][c.name] += setup_time
+                    time_dict['links'] += setup_time
+                elif c.base_type == 'institution':
+                    self.timing['institutions'][c.name] += setup_time
+                    time_dict['institutions'] += setup_time
+                elif c.base_type == 'component':
+                    self.timing['unknown'][c.name] += setup_time
+                    time_dict['unknown'] += setup_time
             except:
                 logging.critical("An error occurred setting up node %s"
-                                 " (timestamp=%s)", n.name, timestamp)
+                                 " (timestamp=%s)", c.name, timestamp)
                 raise
 
-        return time.time() - overall_time
+        return time_dict
 
     def pre_process(self):
         """
@@ -350,28 +362,16 @@ class Network(Container):
             state.
         """
         super(Network, self).pre_process()
-        for i in self.institutions:
-            i.pre_process()
-
-        for l in self.links:
-            l.pre_process()
-
-        for n in self.nodes:
-            n.pre_process()
+        for c in self.components:
+            c.pre_process()
 
     def post_process(self):
         """
             Post process the entire network. Saves any properties to history.
         """
         super(Network, self).post_process()
-        for i in self.institutions:
-            i.post_process()
-
-        for l in self.links:
-            l.post_process()
-
-        for n in self.nodes:
-            n.post_process()
+        for c in self.components:
+            c.post_process()
 
     @property
     def connectivity(self):
