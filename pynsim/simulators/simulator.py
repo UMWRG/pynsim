@@ -62,7 +62,7 @@ class Simulator(object):
             t = time.time()
             self.network.setup(timestep)
             self.timing['network'] += time.time() - t
-            
+
             logging.debug("Setting up components")
             setup_timing = self.network.setup_components(timestep)
             self.timing['institutions'] += setup_timing['institutions']
@@ -115,7 +115,7 @@ class Simulator(object):
     def plot_engine_timing(self):
         """
         """
-        #Import seaborn to prettify the graphs if possible 
+        #Import seaborn to prettify the graphs if possible
         try:
             import seaborn
         except:
@@ -124,7 +124,7 @@ class Simulator(object):
             import matplotlib.pyplot as plt
 
             width = 0.35
-            
+
             s = self.timing['engines'].values()
             names = self.timing['engines'].keys()
             plt_axes = []
@@ -133,9 +133,9 @@ class Simulator(object):
                 plt_axes.append(i)
                 plt_axes_offset.append(i+0.15)
 
-            
+
             fig, ax = plt.subplots()
-            
+
             rects1 = ax.bar(plt_axes, s, width, color='r')
             ax.set_xticks(plt_axes_offset)
             ax.set_xticklabels(list(names))
@@ -155,7 +155,7 @@ class Simulator(object):
                 logging.warn("For tooltips, install mpld3 (pip install mpld3)")
                 plt.show(block=True)
 
-            
+
 
         except ImportError, e:
             logging.critical("Cannot plot. Please ensure matplotlib "
@@ -199,3 +199,14 @@ class Simulator(object):
             # Generate time index
             self.timesteps = pd.date_range(start=start_time, end=end_time,
                                            periods=periods, freq=frequency)
+
+    def reset_history(self):
+        """Reset the history of all components used in this simulation.
+        """
+        self.network.reset_history()
+        for node in self.network.nodes:
+            node.reset_history()
+        for link in self.network.links:
+            link.reset_history()
+        for institution in self.network.institutions:
+            institution.reset_history()
