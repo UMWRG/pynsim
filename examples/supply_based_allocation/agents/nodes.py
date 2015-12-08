@@ -21,6 +21,8 @@ class Reservoir(Node):
                 inflow
     """
 
+    colour = 'blue'
+
     _properties = {'S': None,
                    'actual_release': None,
                    'min_stor': None,
@@ -35,6 +37,7 @@ class Reservoir(Node):
         self.inflow = self._inflow[t]
 
 class Junction(Node):
+    colour = 'black'
     _inflow = {}
     _allocation = {}
     _allocation_priority = None
@@ -106,11 +109,13 @@ class Junction(Node):
         return alloc_volume
 
 class Consumption(Node):
+    colour = 'purple'
     def consume(self):
         self.inflow = sum([l.flow for l in self.in_links])
         self.deficit = self.demand - self.inflow
 
 class Farm(Consumption):
+    colour = 'green'
     _demand = {}
     _properties = {'inflow': None,
                     'deficit' : None,
@@ -119,6 +124,7 @@ class Farm(Consumption):
         self.demand = self._demand.get(timestamp, self._properties['demand'])
 
 class Urban(Consumption):
+    colour = 'grey'
     _demand = {}
     _properties = {'inflow': None,
                     'deficit' : None,
