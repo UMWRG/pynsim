@@ -1,0 +1,139 @@
+ <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+     <xs:element name="template_definition">
+         <xs:complexType>
+             <xs:sequence>
+                <xs:element name="template_name" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="layout" minOccurs="0">
+                <xs:complexType>
+                     <xs:sequence>
+                        <xs:element name="item" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="name"  type="xs:string"/>
+                                    <xs:element name="value" type="xs:anyType"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                     </xs:sequence>
+                 </xs:complexType>
+                </xs:element>
+
+                <xs:element name="resources">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="resource" minOccurs="1" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="type" minOccurs="1" maxOccurs="1">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="NETWORK"/>
+                                                    <xs:enumeration value="NODE"/>
+                                                    <xs:enumeration value="LINK"/>
+                                                    <xs:enumeration value="GROUP"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                                        <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                                        <xs:element name="layout" minOccurs="0">
+                                         <xs:complexType>
+                                             <xs:sequence>
+                                                <xs:element name="item" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                        <xs:sequence>
+                                                            <xs:element name="name"  type="xs:string"/>
+                                                            <xs:element name="value" type="xs:string"/>
+                                                        </xs:sequence>
+                                                    </xs:complexType>
+                                                </xs:element>
+                                             </xs:sequence>
+                                         </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="attribute" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                                                    <xs:choice minOccurs="1" maxOccurs="2">
+                                                        <xs:element name="dimension" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                                                        <xs:element name="unit" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                                                    </xs:choice>
+                                                    <xs:element name="is_var" minOccurs="0" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="Y"/>
+                                                                <xs:enumeration value="N"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="default" minOccurs="0" maxOccurs="1">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="value" type="xs:string"/>
+                                                                <xs:element name="unit" type="xs:string"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="data_type" minOccurs="0" maxOccurs="1">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="descriptor"/>
+                                                                <xs:enumeration value="scalar"/>
+                                                                <xs:enumeration value="array"/>
+                                                                <xs:enumeration value="timeseries"/>
+                                                                <xs:enumeration value="eqtimeseries"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element name="restrictions" minOccurs="0" maxOccurs="1">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="restriction" maxOccurs="unbounded">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="type">
+                                                                                <xs:simpleType>
+                                                                                    <xs:restriction base="xs:string">
+                                                                                        <xs:enumeration value="ENUM"/>
+                                                                                        <xs:enumeration value="BOOLYN"/>
+                                                                                        <xs:enumeration value="BOOL10"/>
+                                                                                        <xs:enumeration value="NUMPLACES"/>
+                                                                                        <xs:enumeration value="VALUERANGE"/>
+                                                                                        <xs:enumeration value="DATERANGE"/>
+                                                                                        <xs:enumeration value="MAXLEN"/>
+                                                                                        <xs:enumeration value="EQUALTO"/>
+                                                                                        <xs:enumeration value="NOTEQUALTO"/>
+                                                                                        <xs:enumeration value="LESSTHAN"/>
+                                                                                        <xs:enumeration value="LESSTHANEQ"/>
+                                                                                        <xs:enumeration value="GREATERTHAN"/>
+                                                                                        <xs:enumeration value="GREATERTHANEQ"/>
+                                                                                        <xs:enumeration value="MULTIPLEOF"/>
+                                                                                        <xs:enumeration value="ISNULL"/>
+                                                                                        <xs:enumeration value="NOTNULL"/>
+                                                                                        <xs:enumeration value="SUMTO"/>
+                                                                                        <xs:enumeration value="INCREASING"/>
+                                                                                        <xs:enumeration value="DECREASING"/>
+                                                                                        <xs:enumeration value="EQUALTIMESTEPS"/>
+                                                                                    </xs:restriction>
+                                                                                </xs:simpleType>
+                                                                            </xs:element>
+                                                                            <xs:element name="value" type="xs:anyType" minOccurs="0" maxOccurs="1"/>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+             </xs:sequence>
+         </xs:complexType>
+     </xs:element>
+ </xs:schema>
