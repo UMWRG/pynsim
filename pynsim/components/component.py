@@ -57,6 +57,14 @@ class Component(object):
         else:
             return self._history.get(attr_name, None)
 
+    def reset_history(self):
+        """
+            Reset the _history dict. This is uesful if a simulator instance is
+            used for multiple simulations.
+        """
+        for k in self._properties:
+            self._history[k] = []
+
     def get_properties(self):
         """
             Get all the properties for this component (as defined in
@@ -132,7 +140,7 @@ class Container(Component):
 
         if link.name in self._link_map:
             raise Exception("An link with the name %s is already defined. Link names must be unique."%link.name)
-        
+
         self._link_map[link.name] = link
 
         if self.base_type == 'network':
@@ -175,12 +183,12 @@ class Container(Component):
         """
         self.nodes.append(node)
         self.components.append(node)
-        
+
         if node.name in self._node_map:
             raise Exception("An node with the name %s is already defined. Node names must be unique."%node.name)
-        
+
         self._node_map[node.name] = node
-        
+
         #If i'm a network, as opposed to an institution
         if self.base_type == 'network':
             self.timing['nodes'][node.name] = 0
@@ -222,7 +230,7 @@ class Container(Component):
         """
         self.institutions.append(institution)
         self.components.append(institution)
-        
+
         if institution.name in self._institution_map:
             raise Exception("An institution with the name %s is already defined. Institutions names must be unique."%institution.name)
 
@@ -270,9 +278,9 @@ class Container(Component):
         """
             Add a single component to the network.
         """
-    
+
         self.components.append(component)
-        
+
         if component.name in self._component_map:
             raise Exception("An component with the name %s is already defined. Component names must be unique."%component.name)
 
@@ -305,7 +313,7 @@ class Network(Container):
 
     def __init__(self, name, **kwargs):
         super(Network, self).__init__(name, **kwargs)
-        
+
         #Track the timing of the setup functions for each node,link and institution
         self.timing = {'nodes':{}, 'links':{}, 'institutions':{}, 'unknown':{}}
 
@@ -437,12 +445,12 @@ class Network(Container):
 
     def plot_timing(self, component):
         """
-         Plot the total time taken to run the setup function of the 
+         Plot the total time taken to run the setup function of the
          components in the network.
 
          :param one of the following: 'nodes', 'links', 'institutions'
         """
-        #Import seaborn to prettify the graphs if possible 
+        #Import seaborn to prettify the graphs if possible
         try:
             import seaborn
         except:
@@ -452,16 +460,16 @@ class Network(Container):
             import matplotlib.pyplot as plt
 
             width = 0.35
-            
+
             s = self.timing[component].values()
             labels = self.timing[component].keys()
             t = range(len(s)) #Make a list [0, 1, 2...len(s)]
             pos = []
             for x in t:
                 pos.append(x+0.15)
-            
+
             fig, ax = plt.subplots()
-            
+
             rects1 = ax.bar(t, s, width, color='r')
             ax.set_xticks(pos)
             ax.set_xticklabels(labels)
