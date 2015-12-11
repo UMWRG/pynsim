@@ -15,6 +15,6 @@ Installation
 
 To test, in a python interpreter:
 
-    from pynsim import Simulator
-    s = Simulator()
-    s.start()
+    >> from pynsim import Simulator
+    >> s = Simulator()
+    >> s.start()
