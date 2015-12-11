@@ -14,7 +14,8 @@ Installation
 pip install pynsim
 
 To test, in a python interpreter:
-::
-from pynsim import Simulator
-s = Simulator()
-s.start()
+
+  !python
+  from pynsim import Simulator
+  s = Simulator()
+  s.start()
