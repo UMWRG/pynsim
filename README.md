@@ -11,7 +11,7 @@ For documentation, see [here](http://umwrg.github.io/pynsim/).
 Installation
 ============
 
-pip install pynsim
+    $ pip install pynsim
 
 To test, in a python interpreter:
 
