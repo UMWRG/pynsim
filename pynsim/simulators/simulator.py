@@ -87,6 +87,8 @@ class Simulator(object):
                 if self.time:
                     self.timing['engines'][engine.name] += time.time()-t
 
+            self.network.post_process()
+
         logging.debug("Finished")
 
     def plot_timing(self):

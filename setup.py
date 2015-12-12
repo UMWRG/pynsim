@@ -11,15 +11,14 @@ def read(fname):
 
 setup(
         name = "PyNSim",
-        version = "0.0.1",
+        version = "0.1.2",
         author = "Stephen Knox",
         author_email = "stephen.knox@manchester.ac.uk",
         description = ("An generic simulator for water resources."),
         license = "GPLv3",
-        keywords = "water hydraplatform",
+        keywords = "pynsim water hydraplatform",
         url = "http://packages.python.org/pynsim",
         packages=find_packages(),
-        long_description=read('README'),
         classifiers=[
             'Programming Language :: Python',
             'Programming Language :: Python :: Implementation :: PyPy',

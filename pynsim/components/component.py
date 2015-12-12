@@ -28,14 +28,12 @@ class Component(object):
     description = None
     base_type = 'component'
     _properties = dict()
-    _tmp_properties = dict()
     _history = dict()
 
     def __init__(self, name, **kwargs):
         self.component_type = self.__class__.__name__
         self.name = name
         self._history = dict()
-        self._tmp_properties = dict()
 
         for k, v in self._properties.items():
             setattr(self, k, v)
@@ -72,6 +70,11 @@ class Component(object):
         for k in self._properties:
             properties[k] = getattr(self, k)
         return properties
+
+    def post_process(self):
+        for k in self._properties:
+            self._history[k].append(getattr(self, k))
+
 
     def __repr__(self):
         return "Component(name=%s)" % (self.name)
@@ -325,6 +328,16 @@ class Network(Container):
         self.current_timestep = timestamp
         self.current_timestep_idx = timestep_idx
 
+    def post_process(self):
+        """
+            Once all the appropriate values have been set, ensure that the
+            values are saved for subsequent use.
+        """
+
+        super(Network, self).post_process()
+        for c in self.components:
+            c.post_process()
+
     def setup_components(self, timestamp, record_time=False):
         """
             Call the setup function of each of the nodes in the network
@@ -335,25 +348,13 @@ class Network(Container):
 
         time_dict = {'nodes':0, 'links':0, 'institutions':0, 'unknown':0}
 
-        for k in self._properties:
-            self._history[k].append(getattr(self, k))
-
-
-
         for c in self.components:
-            #removed the component's 'pre_process' function for efficiency
-            for k in c._properties:
-                c._history[k].append(getattr(c, k))
-
             try:
 
                 if record_time is True:
                     individual_time = time.time()
                 
                 c.setup(timestamp)
-
-                for k in self._tmp_properties:
-                    self._history[k].append(getattr(self, k))
 
                 if record_time is True:
                     #Compile the timing dictionary
