@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
         name = "PyNSim",
-        version = "0.1.2",
+        version = "0.1.3",
         author = "Stephen Knox",
         author_email = "stephen.knox@manchester.ac.uk",
         description = ("An generic simulator for water resources."),
