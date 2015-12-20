@@ -212,9 +212,11 @@ class PriorityBased(Engine):
         model.objective = pyomo.Objective(rule=objective, sense=pyomo.minimize)
 
         # Run optimisation
-        model_instance = model.create()
-        result = solver.solve(model_instance)
-        model_instance.load(result)
+        #model_instance = model.create_instance()
+        #result = solver.solve(model_instance)
+        #model_instance.load(result)
+        result = solver.solve(model)
+        model.solutions.load_from(result)
 
         # Extract results
         #-- Assign node variables
@@ -222,15 +224,15 @@ class PriorityBased(Engine):
 
         for node_id in node_types['Reservoir']:
             node = nodes[node_id]
-            node.S = model_instance.Res_S[node_id].value
+            node.S = model.Res_S[node_id].value
             self.target.nodes.append(node)
         for node_id in node_types['Demand']:
             node = nodes[node_id]
-            node.delivery = model_instance.Dem_delivery[node_id].value
+            node.delivery = model.Dem_delivery[node_id].value
             self.target.nodes.append(node)
         for node_id in node_types['InAndOut']:
             node = nodes[node_id]
-            node.Q = model_instance.InA_Q[node_id].value
+            node.Q = model.InA_Q[node_id].value
             self.target.nodes.append(node)
         for node_id in node_types['Junction']:
             # No results here, but the node is needed in the following
@@ -241,7 +243,7 @@ class PriorityBased(Engine):
         self.target.links = []
 
         for link_id, link in links.iteritems():
-            link.Q = model_instance.Cha_Q[link_id].value
+            link.Q = model.Cha_Q[link_id].value
             self.target.links.append(link)
 
         #-- Assign objective
