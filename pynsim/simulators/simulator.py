@@ -28,7 +28,7 @@ class Simulator(object):
 
     network = None
 
-    def __init__(self, network=None, time=False):
+    def __init__(self, network=None, time=False, progress=False):
         self.engines = []
         #User defined timeseps
         self.timesteps = []
@@ -42,11 +42,22 @@ class Simulator(object):
         self.timing = {'network': 0, 'nodes': 0, 'links': 0, 'institutions': 0,
                        'engines': {}}
 
+        self.progress = progress
+
     def __repr__(self):
         my_engines = ",".join([m.name for m in self.engines])
         return "Simulator(engines=[%s])" % (my_engines)
 
     def start(self):
+        # Provide dummy function to simplify code below
+        def tqdm(iterable, **kwargs):
+            return iterable
+        if self.progress:
+            # If tqdm is installed, use tqdm for printing a progressbar
+            try:
+                from tqdm import tqdm
+            except ImportError:
+                logging.warn("Please install 'tqdm' to display progress bar.")
 
         for engine in self.engines:
             self.timing['engines'][engine.name] = 0
@@ -61,7 +72,8 @@ class Simulator(object):
             logging.critical("No timesteps specified!")
             return
 
-        for idx, timestep in enumerate(self.timesteps):
+        for idx, timestep in tqdm(enumerate(self.timesteps),
+                                  total=len(self.timesteps)):
             self.network.set_timestep(timestep, idx)
 
             logging.debug("Setting up network")
