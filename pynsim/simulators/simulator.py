@@ -43,6 +43,7 @@ class Simulator(object):
                        'engines': {}}
 
         self.progress = progress
+        self.current_timestep = None
 
     def __repr__(self):
         my_engines = ",".join([m.name for m in self.engines])
@@ -74,6 +75,9 @@ class Simulator(object):
 
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
+
+            self.current_timestep = timestep
+
             self.network.set_timestep(timestep, idx)
 
             logging.debug("Setting up network")
