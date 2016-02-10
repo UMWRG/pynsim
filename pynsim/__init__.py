@@ -17,6 +17,7 @@
 
 import logging
 import os
+import sys
 level = 'INFO'
 
 if os.name == "nt":
@@ -25,7 +26,7 @@ if os.name == "nt":
    logging.addLevelName( logging.WARNING, logging.getLevelName(logging.WARNING))
    logging.addLevelName( logging.ERROR, logging.getLevelName(logging.ERROR))
    logging.addLevelName( logging.CRITICAL, logging.getLevelName(logging.CRITICAL))
-   logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=level)
+   logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=level, stream=sys.stderr)
 else:
    logging.addLevelName( logging.INFO, "\033[0;m%s\033[0;m" % logging.getLevelName(logging.INFO))
    logging.addLevelName( logging.DEBUG, "\033[0;32m%s\033[0;32m" % logging.getLevelName(logging.DEBUG))
@@ -33,7 +34,7 @@ else:
    logging.addLevelName( logging.ERROR, "\033[0;31m%s\033[0;31m" % logging.getLevelName(logging.ERROR))
    logging.addLevelName( logging.CRITICAL, "\033[0;35m%s\033[0;35m" % logging.getLevelName(logging.CRITICAL))
 
-   logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s\033[0m', level=level)
+   logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s\033[0m', level=level, stream=sys.stderr)
 
 
 
