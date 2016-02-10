@@ -69,18 +69,18 @@ class PynsimToHydraTemplate(object):
         name = etree.SubElement(item, 'name')
         name.text = 'grouping'
         value = etree.SubElement(item, 'value')
-        
+
         name2 = etree.SubElement(value, 'name')
         name2.text = self.template_name
 
         description = etree.SubElement(value, 'description')
-        description.text = "An automatically generated template from the HOBBES network server."
+        description.text = "An automatically generated template using pynsim2hydra."
 
         cats = etree.SubElement(value, 'categories')
         for k, modules in self.resource_dict.items():
             if k in ('NETWORK', 'GROUP'):
                 continue
-            
+
             duplicate_modules = []
             if len(modules) > 0:
                 cat  = etree.SubElement(cats, 'category')
@@ -102,11 +102,11 @@ class PynsimToHydraTemplate(object):
 
                     grp = etree.SubElement(groups, 'group')
                     grpname  = etree.SubElement(grp, 'name')
-                    grpname.text = module[0] 
+                    grpname.text = module[0]
                     grpdesc  = etree.SubElement(grp, 'description')
-                    grpdesc.text = module[0] 
+                    grpdesc.text = module[0]
                     grpdispname  = etree.SubElement(grp, 'displayname')
-                    grpdispname.text = module[0] 
+                    grpdispname.text = module[0]
                     grpdispname  = etree.SubElement(grp, 'image')
                     grpdispname.text = ''
 
@@ -124,12 +124,12 @@ class PynsimToHydraTemplate(object):
                         duplicate_modules.append(module[0])
                     res = etree.SubElement(ress, 'resource')
                     typ = etree.SubElement(res, 'type')
-                    typ.text = resource_type 
+                    typ.text = resource_type
                     #print typt
                     name = etree.SubElement(res, 'name')
                     name.text = module[0]
-                    
-                    
+
+
                     if resource_type not in ('NETWORK', 'GROUP'):
                         layout = etree.SubElement(res, 'layout')
 
@@ -142,7 +142,7 @@ class PynsimToHydraTemplate(object):
 
 
                         if hasattr(module[1], 'colour'):
-                            
+
                             colour = module[1].colour
                         else:
                             colour = 'black'
@@ -151,7 +151,7 @@ class PynsimToHydraTemplate(object):
                         colourname = etree.SubElement(colouritem, 'name')
                         colourname.text = 'colour'
                         colourval = etree.SubElement(colouritem, 'value')
-                        colourval.text = colour 
+                        colourval.text = colour
 
                         if resource_type == 'NODE':
                             shapeitem = etree.SubElement(layout, 'item')
@@ -159,7 +159,7 @@ class PynsimToHydraTemplate(object):
                             shapename.text = 'symbol'
                             shapeval = etree.SubElement(shapeitem, 'value')
                             shapeval.text = 'circle'
-                        
+
                         if resource_type == 'LINK':
                             shapeitem = etree.SubElement(layout, 'item')
                             shapename = etree.SubElement(shapeitem, 'name')
@@ -199,7 +199,7 @@ class PynsimToHydraTemplate(object):
 
         os.chdir(self.folder)
         sys.path.append(self.folder)
-        
+
         for dir in listd:
             if os.path.isdir(self.folder + os.path.sep + dir):
                 sys.path.append(self.folder + os.path.sep + dir)
@@ -211,7 +211,7 @@ class PynsimToHydraTemplate(object):
                     if fname[0] == '_':
                         continue
                     fname = "%s.%s"%(dir, fname[0:-3])
-                    print "\nloading %s, (%s)\n"%(fname, file) 
+                    print "\nloading %s, (%s)\n"%(fname, file)
                     #print fname, file
 
                     try:
@@ -277,6 +277,6 @@ Eawag: Swiss Federal Institute of Aquatic Science and Technology
 if __name__ == '__main__':
     parser = commandline_parser()
     args = parser.parse_args()
-    converter = PynsimToHydraTemplate(folder=args.folder, output=args.output, 
+    converter = PynsimToHydraTemplate(folder=args.folder, output=args.output,
                                      name=args.template_name)
     converter.convert()

@@ -27,22 +27,37 @@ import multiprocessing
 class Simulator(object):
 
     network = None
-    def __init__(self, network=None, time=False):
+
+    def __init__(self, network=None, time=False, progress=False):
         self.engines = []
         #User defined timeseps
         self.timesteps = []
         self.time = time
-        self.network=network
-        #Track the cumilative time of the setup functions for the network, nodes
-        #links and institutions. Also tracks the cumulative time of each engine run. This dict should show where a slow-down is occurring. For more details, the
-        #timings of each node, link & instution can be found in the network.timing property.
-        self.timing = {'network':0, 'nodes':0, 'links':0, 'institutions':0, 'engines':{}}
+        self.network = network
+        # Track the cumilative time of the setup functions for the network,
+        # nodes links and institutions. Also tracks the cumulative time of each
+        # engine run. This dict should show where a slow-down is occurring. For
+        # more details, the timings of each node, link & instution can be found
+        # in the network.timing property.
+        self.timing = {'network': 0, 'nodes': 0, 'links': 0, 'institutions': 0,
+                       'engines': {}}
+
+        self.progress = progress
 
     def __repr__(self):
-        my_engines=",".join([m.name for m in self.engines])
-        return "Simulator(engines=[%s])"%(my_engines)
+        my_engines = ",".join([m.name for m in self.engines])
+        return "Simulator(engines=[%s])" % (my_engines)
 
     def start(self):
+        # Provide dummy function to simplify code below
+        def tqdm(iterable, **kwargs):
+            return iterable
+        if self.progress:
+            # If tqdm is installed, use tqdm for printing a progressbar
+            try:
+                from tqdm import tqdm
+            except ImportError:
+                logging.warn("Please install 'tqdm' to display progress bar.")
 
         for engine in self.engines:
             self.timing['engines'][engine.name] = 0
@@ -57,7 +72,8 @@ class Simulator(object):
             logging.critical("No timesteps specified!")
             return
 
-        for idx, timestep in enumerate(self.timesteps):
+        for idx, timestep in tqdm(enumerate(self.timesteps),
+                                  total=len(self.timesteps)):
             self.network.set_timestep(timestep, idx)
 
             logging.debug("Setting up network")
@@ -85,7 +101,7 @@ class Simulator(object):
                 engine.run()
 
                 if self.time:
-                    self.timing['engines'][engine.name] += time.time()-t
+                    self.timing['engines'][engine.name] += time.time() - t
 
             self.network.post_process()
 
@@ -105,7 +121,9 @@ class Simulator(object):
 
             width = 0.35
 
-            s = [self.timing['nodes'], self.timing['links'], self.timing['institutions'], sum(self.timing['engines'].values())]
+            s = [self.timing['nodes'], self.timing['links'],
+                 self.timing['institutions'],
+                 sum(self.timing['engines'].values())]
 
             fig, ax = plt.subplots()
 
@@ -140,8 +158,7 @@ class Simulator(object):
             plt_axes_offset = []
             for i, n in enumerate(names):
                 plt_axes.append(i)
-                plt_axes_offset.append(i+0.15)
-
+                plt_axes_offset.append(i + 0.15)
 
             fig, ax = plt.subplots()
 
@@ -153,7 +170,7 @@ class Simulator(object):
 
             try:
                 import mpld3
-                i=0
+                i = 0
                 for r in rects1:
                     tooltip = mpld3.plugins.LineLabelTooltip(r, label=names[i])
                     mpld3.plugins.connect(fig, tooltip)
@@ -164,13 +181,9 @@ class Simulator(object):
                 logging.warn("For tooltips, install mpld3 (pip install mpld3)")
                 plt.show(block=True)
 
-
-
         except ImportError, e:
             logging.critical("Cannot plot. Please ensure matplotlib "
                              "and networkx are installed.")
-
-
 
     def pause(self):
         pass
@@ -219,3 +232,69 @@ class Simulator(object):
             link.reset_history()
         for institution in self.network.institutions:
             institution.reset_history()
+
+    def export_history(self, property_name, export_file):
+        """
+        Export the history of a given set of properties to a CSV file.
+
+        Args:
+
+            property_name (string or list of strings): Properties that will be
+                exported.
+
+            expoft_file (string): Full path to the file path. Existing files
+                will be overwritten.
+
+        Returns:
+
+            None
+
+        Raises:
+
+        """
+        try:
+            import pandas as pd
+
+            export_data = pd.DataFrame(index=self.timesteps)
+
+            if isinstance(property_name, str):
+                property_name = [property_name]
+
+            for prop in property_name:
+                if prop in self.network.get_properties():
+                    export_data['%s %s' % (self.network.name, prop)] = \
+                        self.network._history[prop]
+
+            for n in self.network.nodes:
+                for prop in property_name:
+                    if prop in n.get_properties():
+                        export_data['%s %s' % (n.name, prop)] = n._history[prop]
+
+            for l in self.network.links:
+                for prop in property_name:
+                    if prop in l.get_properties():
+                        if len(export_data.columns) > 0:
+                            logging.info("INFO: Some nodes have the same"
+                                         "property %s as this link %s"
+                                         % (property_name, l.name))
+                        export_data['%s %s' % (l.name, prop)] = l._history[prop]
+
+            for i in self.network.institutions:
+                for prop in property_name:
+                    if prop in i.get_properties():
+                        if len(export_data.columns) > 0:
+                            logging.info("INFO: Some nodes or links have the"
+                                         "same property %s as this institution"
+                                         "(%s)" % (property_name, i.name))
+                        export_data['%s %s' % (i.name, prop)] = i._history[prop]
+
+            if len(export_data.columns) == 0:
+                logging.warn("No components found with property %s"
+                             % property_name)
+                return
+            else:
+                export_data.to_csv(export_file)
+
+        except ImportError:
+            logging.critical("Cannot plot %s. Please ensure pandas is"
+                             "installed." % property_name)

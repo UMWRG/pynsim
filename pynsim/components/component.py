@@ -353,7 +353,7 @@ class Network(Container):
 
                 if record_time is True:
                     individual_time = time.time()
-                
+
                 c.setup(timestamp)
 
                 if record_time is True:
@@ -481,16 +481,27 @@ class Network(Container):
 
     def plot(self, property_name, block=True):
         """
-            Plot the history of a property
-            :param The name of the property to be plotted.
-            :param The type of nodes to which this property belongs.
-                   If this is empty, all nodes and links in the network
-                   will be checked for this property.
-            :param Stop the current process while displaying the plot. False
-                   to continue the process. If false, make sure the process
-                   does not end of its own accord (by putting in a request for
-                   user input, for example) as the plot will disappear.
+        Plot the history of a property.
+
+        Args:
+            property_name (string): The name of the property to be plotted.
+
+            block (bool): Stop the current process while displaying the plot.
+                   False to continue the process. If false, make sure the
+                   process does not end of its own accord (by putting in a
+                   request for user input, for example) as the plot will
+                   disappear.
+
+        Returns:
+            None
+
+        Raises:
+
         """
+        #TODO: Argument that specifies the type of nodes to which a property
+        #      belongs. If it is empty, all nodes and links in the network will
+        #      be checked for this property.
+
         #Import seaborn to prettify the graphs if possible
         try:
             import seaborn
@@ -523,8 +534,8 @@ class Network(Container):
                 logging.warn("No components found with property %s"%property_name)
                 return
 
-            num_cols = 7
-            num_rows = (len(components_to_plot) / 7) + 1
+            num_cols = min(len(components_to_plot), 5)
+            num_rows = ((len(components_to_plot) - 1) / num_cols) + 1
             plt.figure(1)
             for i, component in enumerate(components_to_plot):
                 plt.subplot(num_rows, num_cols, i + 1)
