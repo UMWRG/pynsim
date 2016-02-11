@@ -1,6 +1,7 @@
 import unittest
 import time
 from pynsim import Simulator, Network, Node, Engine
+import json
 
 class EmptyEngine(Engine):
     def run(self):
@@ -12,7 +13,7 @@ class OverheadTest(unittest.TestCase):
         print "Setting Up" 
         start = 10
         multiplier = 10
-        range_value = 6
+        range_value = 4
 
         self.num_timesteps = [start*multiplier**i for i in range(range_value)]
         self.num_nodes = [start*multiplier**i for i in range(range_value)]
@@ -60,6 +61,10 @@ class OverheadTest(unittest.TestCase):
                 s.start()
 
                 self.result_matrix[num_timesteps][num_nodes] = (time.time()-t)
+
+                overhead_result = open('overhead_result.json', 'w')
+
+                overhead_result.write(json.dumps(self.result_matrix))
 
 def run():
     unittest.main()
