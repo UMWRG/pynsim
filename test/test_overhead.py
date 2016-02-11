@@ -63,9 +63,9 @@ class OverheadTest(unittest.TestCase):
 
                 self.result_matrix[num_timesteps][num_nodes] = (time.time()-t)
 
-                overhead_result = open('overhead_result.json', 'w')
+        overhead_result = open('overhead_result.json', 'w')
 
-                overhead_result.write(json.dumps(self.result_matrix))
+        overhead_result.write(json.dumps(self.result_matrix))
 
 def run():
     unittest.main()
