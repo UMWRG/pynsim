@@ -13,7 +13,7 @@ class OverheadTest(unittest.TestCase):
         print "Setting Up" 
         start = 10
         multiplier = 10
-        range_value = 4
+        range_value = 5
 
         self.num_timesteps = [start*multiplier**i for i in range(range_value)]
         self.num_nodes = [start*multiplier**i for i in range(range_value)]
@@ -33,6 +33,7 @@ class OverheadTest(unittest.TestCase):
 
         for num_timesteps in self.num_timesteps:
             for num_nodes in self.num_nodes:
+                print "%s timesteps *  %s nodes"%(num_timesteps, num_nodes)
                 #Create a simulator object which will be run.
                 s = Simulator()
 
