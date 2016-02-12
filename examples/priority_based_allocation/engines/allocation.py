@@ -95,7 +95,8 @@ class PriorityBased(Engine):
             if len(nodes[res]._history['S']) == 0:
                 init_stor[res] = nodes[res].init_stor
             else:
-                init_stor[res] = nodes[res]._history['S'][-1]
+                init_stor[res] = nodes[res]._history['S'].values()[-1]
+
             max_stor[res] = nodes[res].max_stor
             min_stor[res] = nodes[res].min_stor
             carryover_penalty[res] = nodes[res].carryover_penalty

@@ -262,28 +262,28 @@ import matplotlib.pyplot as plt
 
 plt.figure(1)
 plt.subplot(2, 5, 1)
-plt.plot(simulation.network.nodes[0]._history['S'])
+plt.plot(simulation.network.nodes[0]._history['S'].values())
 plt.title('SR storage')
 
 plt.subplot(2, 5, 2)
-plt.plot(simulation.network.nodes[1]._history['delivery'])
+plt.plot(simulation.network.nodes[1]._history['delivery'].values())
 plt.title('IRR delivery')
 
 plt.subplot(2, 5, 3)
-plt.plot(simulation.network.nodes[2]._history['delivery'])
+plt.plot(simulation.network.nodes[2]._history['delivery'].values())
 plt.title('URB delivery')
 
 plt.subplot(2, 5, 4)
-plt.plot(simulation.network.nodes[3]._history['Q'])
+plt.plot(simulation.network.nodes[3]._history['Q'].values())
 plt.title('In flow')
 
 plt.subplot(2, 5, 5)
-plt.plot(simulation.network.nodes[4]._history['Q'])
+plt.plot(simulation.network.nodes[4]._history['Q'].values())
 plt.title('Out flow')
 
 for i, link in enumerate(simulation.network.links):
     plt.subplot(2, 5, i + 6)
-    plt.plot(link._history['Q'])
+    plt.plot(link._history['Q'].values())
     plt.title('%s flow' % link.name)
 
 plt.show()

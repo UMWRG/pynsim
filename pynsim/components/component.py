@@ -37,21 +37,47 @@ class Component(object):
 
         for k, v in self._properties.items():
             setattr(self, k, v)
-            self._history[k] = []
+            self._history[k] = {}
 
         for k, v in kwargs.items():
             if k not in self._properties:
                 raise Exception("Invalid property %s. Allowed properties are: %s" % (k, self._properties.keys()))
 
+    def __setattr__(self, name, value):
+        """
+            When a value is set on an object, check whether it is a part of the 
+            _properties. If so, add it to the _history.
+        """
+
+        super(Component, self).__setattr__(name, value)
+
+        if name in self._properties:
+            if self.base_type == 'network':
+                #The sim hasn't started yet.
+                if not hasattr(self, "current_timestep"):
+                    return
+
+                current_timestep = self.current_timestep
+            else:
+                #The sim hasn't started yet
+                if self.network is None:
+                    return
+
+                current_timestep = self.network.current_timestep
+
+            self._history[name][current_timestep] = value
+
+
     def get_history(self, attr_name=None):
         """
             Return a dictionary, keyed on timestep, with each value of the
-            attribute at that timestep.
+            attribute at that timestep. Returns an empty dict if no entry is found
+            for the supplied attribute name.
         """
         if attr_name is None:
             return self._history
         else:
-            return self._history.get(attr_name, None)
+            return self._history.get(attr_name, {})
 
     def reset_history(self):
         """
@@ -59,7 +85,7 @@ class Component(object):
             used for multiple simulations.
         """
         for k in self._properties:
-            self._history[k] = []
+            self._history[k] = {}
 
     def get_properties(self):
         """
@@ -70,11 +96,6 @@ class Component(object):
         for k in self._properties:
             properties[k] = getattr(self, k)
         return properties
-
-    def post_process(self):
-        for k in self._properties:
-            self._history[k].append(getattr(self, k))
-
 
     def __repr__(self):
         return "Component(name=%s)" % (self.name)
@@ -328,16 +349,6 @@ class Network(Container):
         self.current_timestep = timestamp
         self.current_timestep_idx = timestep_idx
 
-    def post_process(self):
-        """
-            Once all the appropriate values have been set, ensure that the
-            values are saved for subsequent use.
-        """
-
-        super(Network, self).post_process()
-        for c in self.components:
-            c.post_process()
-
     def setup_components(self, timestamp, record_time=False):
         """
             Call the setup function of each of the nodes in the network
@@ -355,6 +366,15 @@ class Network(Container):
                     individual_time = time.time()
 
                 c.setup(timestamp)
+
+                print c._history
+                #This will cause duplication for any properties which were already
+                #set in the setup function and any which are potentially set 
+                #after, but is *usually* better than looping over all components
+                #to get their history at the end of the time step
+                #for k in c._properties:
+                #    c._history[k][self.current_timestep] = getattr(c, k)
+                
 
                 if record_time is True:
                     #Compile the timing dictionary
@@ -539,7 +559,7 @@ class Network(Container):
             plt.figure(1)
             for i, component in enumerate(components_to_plot):
                 plt.subplot(num_rows, num_cols, i + 1)
-                plt.plot(component._history[property_name], 'r')
+                plt.plot(component._history[property_name].values(), 'r')
                 plt.title('%s' % (component.name))
             plt.show(block=block)
 
