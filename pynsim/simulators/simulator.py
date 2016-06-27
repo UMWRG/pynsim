@@ -19,8 +19,6 @@ import logging
 
 import time
 
-import pandas as pd
-
 import multiprocessing
 
 
@@ -217,14 +215,23 @@ class Simulator(object):
         generated as pandas.DateTimeIndex.
         """
 
-        try:
+        if timesteps is not None:
             # Check if iterable
-            _ = [t for t in timesteps]
-            self.timesteps = timesteps
-        except TypeError:
-            # Generate time index
-            self.timesteps = pd.date_range(start=start_time, end=end_time,
-                                           periods=periods, freq=frequency)
+            try:
+                _ = [t for t in timesteps]
+                self.timesteps = timesteps
+            except TypeError:
+                logging.critical("Cannot set timesteps. Timesteps must be "
+                                 "iterable.")
+        else:
+            try:
+                import pandas as pd
+                # Generate time index
+                self.timesteps = pd.date_range(start=start_time, end=end_time,
+                                               periods=periods, freq=frequency)
+            except ImportError:
+                logging.critical("Cannot set timestep. Please ensure pandas is"
+                                 " installed.")
 
     def reset_history(self):
         """Reset the history of all components used in this simulation.
