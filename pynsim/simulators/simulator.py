@@ -71,6 +71,10 @@ class Simulator(object):
             logging.critical("No timesteps specified!")
             return
 
+        for engine in self.engines:
+            logging.debug("Setting up engine %s", engine.name)
+            engine.setup()
+
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
 
@@ -107,6 +111,10 @@ class Simulator(object):
 
             self.network.post_process()
 
+        for engine in self.engines:
+            logging.debug("Teearing Down engine %s", engine.name)
+            engine.teardown()
+        
         logging.debug("Finished")
 
     def plot_timing(self):
