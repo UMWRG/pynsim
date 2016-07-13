@@ -5,7 +5,7 @@ import json
 
 
 class EmptyEngine(Engine):
-    def run(self):
+    def update(self):
         pass
 
 

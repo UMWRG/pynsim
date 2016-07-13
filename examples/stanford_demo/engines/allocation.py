@@ -23,7 +23,7 @@ class DeficitAllocation(Engine):
     network in a single time-step."""
     target = None
 
-    def run(self):
+    def update(self):
         """
             Need to do some stuff here
         """

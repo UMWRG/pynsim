@@ -25,11 +25,11 @@ class Engine(object):
         #indicates numerically the current timestep
         self.timestep_idx = None
     
-    def run(self):
+    def initialize(self):
         pass
 
-    def setup(self):
+    def update(self):
         pass
 
-    def teardown(self):
+    def finalize(self):
         pass

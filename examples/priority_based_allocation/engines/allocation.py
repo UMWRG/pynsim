@@ -23,7 +23,7 @@ class PriorityBased(Engine):
             yield n
             n += 1
 
-    def run(self):
+    def update(self):
         """Calculate optimal allocation for one time step.
         """
         # Create a concrete model

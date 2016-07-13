@@ -28,7 +28,7 @@ class PyomoAllocation(Engine):
     target = None
     storage={}
 
-    def run(self):
+    def update(self):
         """
             Calling Pyomo model
         """

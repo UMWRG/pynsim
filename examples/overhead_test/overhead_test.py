@@ -35,7 +35,7 @@ for inst_num in range(num_institutions):
 s.network = n
 
 class EmptyEngine(Engine):
-    def run(self):
+    def update(self):
         pass
 
 #Create an instance of the deficit allocation engine.

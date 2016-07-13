@@ -10,7 +10,7 @@ class Routing(Engine):
     name = "Simple flow routing."
     target = None
 
-    def run(self):
+    def update(self):
         # Find head nodes
         head_nodes = []
         outlet_node = None

@@ -129,7 +129,7 @@ A simulation if PyNSim has the following workflow:
  A. The **setup()** function of each Institution is called
  B. The **setup()** function of each Node is called
  C. The **setup()** function of each Link is called
- D. The **run()** function of each Engine is called.
+ D. The **update()** function of each Engine is called.
 
 8. The simulation ends.
 

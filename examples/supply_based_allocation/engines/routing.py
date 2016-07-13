@@ -11,7 +11,7 @@ class SimpleRouting(Engine):
 
     name = "Simple supply allocation for a junction & farm network."
 
-    def run(self):
+    def update(self):
         """Allocation for one time step.
         """
         start_node = None

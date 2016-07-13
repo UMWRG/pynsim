@@ -71,6 +71,11 @@ class Simulator(object):
             logging.critical("No timesteps specified!")
             return
 
+        #Initialize all engines
+        for engine in self.engines:
+            logging.debug("Initializing engine %s", engine.name)
+            engine.initialize()
+
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
 
@@ -100,12 +105,17 @@ class Simulator(object):
 
                 engine.timestep = timestep
                 engine.timestep_idx = idx
-                engine.run()
+                engine.update()
 
                 if self.time:
                     self.timing['engines'][engine.name] += time.time() - t
 
             self.network.post_process()
+
+        #Tear down all engines
+        for engine in self.engines:
+            logging.debug("Finalizing engine %s", engine.name)
+            engine.finalize()
 
         logging.debug("Finished")
 

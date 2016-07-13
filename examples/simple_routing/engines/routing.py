@@ -12,7 +12,7 @@ class SimpleRouting(Engine):
     name = "Simple flow routing for reservoir network."
     target = None
 
-    def run(self):
+    def update(self):
         """Flow routing for one time step.
         """
 
