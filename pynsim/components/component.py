@@ -310,14 +310,13 @@ class Network(Container):
         A container for nodes, links and institutions.
     """
     base_type = 'network'
+    projection = None
 
     def __init__(self, name, **kwargs):
         super(Network, self).__init__(name, **kwargs)
 
         #Track the timing of the setup functions for each node,link and institution
         self.timing = {'nodes':{}, 'links':{}, 'institutions':{}, 'unknown':{}}
-
-        self.shapefile = kwargs.get('shapefile', '/Users/sknox/git/jordanprototype/data/shapefiles/jordan_boundary')
 
         self.current_timestep = None
         self.current_timestep_idx = None
@@ -425,13 +424,13 @@ class Network(Container):
             #If there are some projections, then the x & y coordinates need
             #to be transformed and then we need to keep track of them.
             node_proj = {}
-            if self.shapefile is not None:
+            if self.projection is not None:
                 try:
                     #Just for the craic
                     from mpl_toolkits.basemap import Basemap
 
                     #map = Basemap(llcrnrlon=33.52,llcrnrlat=30.50,urcrnrlon=38.4,urcrnrlat=34.80, epsg=28191, resolution='h')
-                    map = Basemap(llcrnrlon=34,llcrnrlat=29,urcrnrlon=39,urcrnrlat=33, epsg=28191, resolution='h',
+                    map = Basemap(llcrnrlon=34,llcrnrlat=29,urcrnrlon=39,urcrnrlat=33, epsg=self.projection, resolution='h',
                                     lon_0=34, lat_0=29) # Official boundary box
                     #map = Basemap(width=460000, height=440000, epsg=28191, resolution='h')
 
@@ -440,10 +439,8 @@ class Network(Container):
                     map.fillcontinents(color='#ddaa66',lake_color='aqua', alpha=0.1)
                     map.drawcoastlines()
 
-                    #map.readshapefile('/Users/sknox/Downloads/jordan_shapefile/JOR_adm0', 'boundary')
-
                     from pyproj import Proj, transform
-                    inProj = Proj(init='epsg:28191')
+                    inProj = Proj(init='epsg:%s'%str(self.projection))
                     outProj = Proj(init='epsg:4326')
 
                     all_xs = []
@@ -463,7 +460,7 @@ class Network(Container):
                         node_proj[n] = (m_xs[i], m_ys[i])
 
                 except Exception, e:
-                    logging.exception("An error has occurred with the shapefile. Cannot display background.")
+                    logging.exception("An error has occurred displaying the network's background. Cannot display background.")
                     map = None
 
             g = nx.Graph()
