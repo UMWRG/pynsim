@@ -73,7 +73,7 @@ class Simulator(object):
 
         for engine in self.engines:
             logging.debug("Setting up engine %s", engine.name)
-            engine.setup()
+            engine.initialise()
 
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
