@@ -28,7 +28,7 @@ class Engine(object):
     def run(self):
         pass
 
-    def setup(self):
+    def initialise(self):
         pass
 
     def teardown(self):

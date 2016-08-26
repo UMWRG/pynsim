@@ -18,6 +18,7 @@
 import logging
 import os
 import time
+from copy import deepcopy
 
 class Component(object):
     """
@@ -73,8 +74,11 @@ class Component(object):
 
     def post_process(self):
         for k in self._properties:
-            self._history[k].append(getattr(self, k))
-
+            attr = getattr(self, k)
+            if isinstance(attr, dict) or isinstance(attr, list):
+                self._history[k].append(deepcopy(attr))
+            else:
+                self._history[k].append(attr)
 
     def __repr__(self):
         return "Component(name=%s)" % (self.name)
@@ -84,6 +88,13 @@ class Component(object):
             Setup function to be overwritten in each component implementation
         """
         pass
+
+
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo):
+        return self
 
 
 class Container(Component):

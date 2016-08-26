@@ -26,11 +26,11 @@ class Simulator(object):
 
     network = None
 
-    def __init__(self, network=None, time=False, progress=False):
+    def __init__(self, network=None, record_time=False, progress=False):
         self.engines = []
         #User defined timeseps
         self.timesteps = []
-        self.time = time
+        self.record_time = record_time
         self.network = network
         # Track the cumilative time of the setup functions for the network,
         # nodes links and institutions. Also tracks the cumulative time of each
@@ -71,6 +71,10 @@ class Simulator(object):
             logging.critical("No timesteps specified!")
             return
 
+        for engine in self.engines:
+            logging.debug("Setting up engine %s", engine.name)
+            engine.initialise()
+
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
 
@@ -84,9 +88,9 @@ class Simulator(object):
             self.timing['network'] += time.time() - t
 
             logging.debug("Setting up components")
-            setup_timing = self.network.setup_components(timestep, self.time)
+            setup_timing = self.network.setup_components(timestep, self.record_time)
 
-            if self.time:
+            if self.record_time:
                 self.timing['institutions'] += setup_timing['institutions']
                 self.timing['links']        += setup_timing['links']
                 self.timing['nodes']        += setup_timing['nodes']
@@ -95,18 +99,22 @@ class Simulator(object):
             for engine in self.engines:
                 logging.debug("Running engine %s", engine.name)
 
-                if self.time:
+                if self.record_time:
                     t = time.time()
 
                 engine.timestep = timestep
                 engine.timestep_idx = idx
                 engine.run()
 
-                if self.time:
+                if self.record_time:
                     self.timing['engines'][engine.name] += time.time() - t
 
             self.network.post_process()
 
+        for engine in self.engines:
+            logging.debug("Teearing Down engine %s", engine.name)
+            engine.teardown()
+        
         logging.debug("Finished")
 
     def plot_timing(self):
