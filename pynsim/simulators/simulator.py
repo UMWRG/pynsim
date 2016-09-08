@@ -176,6 +176,7 @@ class Simulator(object):
             ax.set_xticks(plt_axes_offset)
             ax.set_xticklabels(list(names))
             ax.set_ylabel('Time')
+            ax.set_xlabel('Engine')
             plt.title('Timing')
 
             try:
