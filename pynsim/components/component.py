@@ -438,30 +438,41 @@ class Network(Container):
             if self.projection is not None:
                 try:
                     #Just for the craic
+
                     from mpl_toolkits.basemap import Basemap
-
-                    #map = Basemap(llcrnrlon=33.52,llcrnrlat=30.50,urcrnrlon=38.4,urcrnrlat=34.80, epsg=28191, resolution='h')
-                    map = Basemap(llcrnrlon=34,llcrnrlat=29,urcrnrlon=39,urcrnrlat=33, epsg=self.projection, resolution='h',
-                                    lon_0=34, lat_0=29) # Official boundary box
-                    #map = Basemap(width=460000, height=440000, epsg=28191, resolution='h')
-
-                    #map.drawmapboundary(fill_color='aqua')
-                    map.drawcountries()
-                    map.fillcontinents(color='#ddaa66',lake_color='aqua', alpha=0.1)
-                    map.drawcoastlines()
 
                     from pyproj import Proj, transform
                     inProj = Proj(init='epsg:%s'%str(self.projection))
                     outProj = Proj(init='epsg:4326')
 
+                    minx = min(n.x for n in self.nodes)
+                    miny = min(n.y for n in self.nodes)
+                    
+                    maxx = max(n.x for n in self.nodes)
+                    maxy = max(n.y for n in self.nodes)
+                    
+                    #add a 10% margin around the network.
+                    xmargin = (maxx-minx)/10
+                    ymargin = (maxy-miny)/10
+
+                    llc_lon, llc_lat = transform(inProj,outProj,minx-xmargin,miny-ymargin)
+                    urc_lon,urc_lat = transform(inProj,outProj,maxx+xmargin,maxy+ymargin)
+
+                    map = Basemap(llcrnrlon=llc_lon,
+                                    llcrnrlat=llc_lat,
+                                    urcrnrlon=urc_lon,
+                                    urcrnrlat=urc_lat, 
+                                    epsg=self.projection,
+                                    resolution='h')
+
+                    map.drawcountries()
+                    map.fillcontinents(color='#ddaa66',lake_color='aqua', alpha=0.1)
+                    map.drawcoastlines()
+
                     all_xs = []
                     all_ys = []
                     for n in self.nodes:
                         y = n.y
-                        if y > 800000:
-                            y = y - 1000000
-                        elif y > 400000:
-                            y = y - 400000
                         tx,ty = transform(inProj,outProj,n.x,y)
                         all_xs.append(tx)
                         all_ys.append(ty)
@@ -494,11 +505,6 @@ class Network(Container):
                     g.add_node(n)
                     x = n.x
                     y = n.y
-                    if y > 800000:
-                        y = y - 1000000
-                    elif y > 400000:
-                        y = y - 400000
-
                     if node_proj.get(n):
                         x = node_proj[n][0]
                         y = node_proj[n][1]
@@ -524,7 +530,7 @@ class Network(Container):
                                    edge_color=colours)
 
             mng = plt.get_current_fig_manager()
-            mng.resize(1000, 700)
+            mng.resize(2000, 2000)
 
             plt.show(block=block)
 
