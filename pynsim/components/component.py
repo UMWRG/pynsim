@@ -18,7 +18,12 @@
 import logging
 import os
 import time
+import pickle
 from copy import deepcopy
+import sys
+import datetime
+from pynsim.history import Map
+import json
 
 class Component(object):
     """
@@ -60,7 +65,7 @@ class Component(object):
             used for multiple simulations.
         """
         for k in self._properties:
-            self._history[k] = []
+            self._history[k] = []        
 
     def get_properties(self):
         """
@@ -330,6 +335,47 @@ class Network(Container):
 
         self.current_timestep = None
         self.current_timestep_idx = None
+
+    def export_history(self, export_type='pickle'):
+        """
+            Export the history of the network and all sub-components into a pickled
+            file, timestamped and in a './history' folder.
+
+            args:
+                export_type string The format of the exported file ('json' or 'pickle). Json is more human readable and has greater cross-compatibility, but pickles allow saving of more complex data structures (objects). Default is JSON.
+        """
+
+        history = Map({'nodes' : Map(), 'links' : Map(), 'institutions' : Map(), 'network': Map(self._history)})
+        
+        for c in self.components:
+            if c.base_type == 'node':
+                history['nodes'][c.name] = Map(c._history)
+            elif c.base_type == 'link':
+                history['links'][c.name] = Map(c._history)
+            elif c.base_type == 'institution':
+                history['institutions'][c.name] = Map(c._history)
+
+        script_dir  = os.path.dirname(os.path.realpath(sys.argv[0]))
+        hist_dir    = os.path.join(script_dir, 'history')
+        if not os.path.exists(hist_dir):
+            os.mkdir(hist_dir)
+        
+        now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
+        export_path = None
+        try:
+            with open(os.path.join(hist_dir, 'sim_'+now+'.json'), 'w') as json_file:
+                json.dumps(history, json_file, indent=4)
+                export_path = os.path.join(hist_dir, 'sim_'+now+'.json')
+        except TypeError:
+            os.remove(os.path.join(hist_dir, 'sim_'+now+'.json'))
+
+            logging.warning('Unable to dump to JSON, trying a pickle')
+            with open(os.path.join(hist_dir, 'sim_'+now+'.pickle'), 'w') as f:
+                pickle.dump(history, f)
+                export_path = os.path.join(hist_dir, 'sim_'+now+'.pickle')
+        
+        logging.info('History Dumped to %s' % export_path)
 
     def set_timestep(self, timestamp, timestep_idx):
         """
