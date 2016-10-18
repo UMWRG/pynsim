@@ -365,7 +365,7 @@ class Network(Container):
         export_path = None
         try:
             with open(os.path.join(hist_dir, 'sim_'+now+'.json'), 'w') as json_file:
-                json.dumps(history, json_file, indent=4)
+                json_file.write(json.dumps(history, indent=4))
                 export_path = os.path.join(hist_dir, 'sim_'+now+'.json')
         except TypeError:
             os.remove(os.path.join(hist_dir, 'sim_'+now+'.json'))

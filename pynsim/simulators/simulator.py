@@ -262,7 +262,7 @@ class Simulator(object):
             property_name (string or list of strings): Properties that will be
                 exported.
 
-            expoft_file (string): Full path to the file path. Existing files
+            export_file (string): Full path to the file path. Existing files
                 will be overwritten.
 
         Returns:
@@ -314,7 +314,10 @@ class Simulator(object):
                 return
             else:
                 export_data.to_csv(export_file)
+        except ValueError:
+            logging.critical("Unable to export export %s to csv. Only simple types (numbers, strings) can be"
+                               "exported to CSV.", property_name)
 
         except ImportError:
-            logging.critical("Cannot plot %s. Please ensure pandas is"
+            logging.critical("Cannot export history. Please ensure pandas is"
                              "installed." % property_name)
