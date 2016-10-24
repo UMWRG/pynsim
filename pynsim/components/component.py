@@ -381,6 +381,7 @@ class Network(Container):
                 export_path = os.path.join(hist_dir, 'sim_'+now+'.pickle')
     
         if reset_history == True:
+            self.reset_history()
             for c in self.components:
                 c.reset_history()
             
