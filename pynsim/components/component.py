@@ -336,16 +336,18 @@ class Network(Container):
         self.current_timestep = None
         self.current_timestep_idx = None
 
-    def export_history(self, export_type='pickle'):
+    def export_history(self, export_type='pickle', reset_history=False, include_all_components=False):
         """
             Export the history of the network and all sub-components into a pickled
             file, timestamped and in a './history' folder.
 
             args:
-                export_type string The format of the exported file ('json' or 'pickle). Json is more human readable and has greater cross-compatibility, but pickles allow saving of more complex data structures (objects). Default is JSON.
+                export_type string:  The format of the exported file ('json' or 'pickle). Json is more human readable and has greater cross-compatibility, but pickles allow saving of more complex data structures (objects). Default is JSON.
+                reset_history Boolean: Empty the history dict for each component after export, useful when the same network is being used for multiple simulations.
+                include_all_components Boolean: If there are components in the network which are not nodes, links or institutions, use this flag to export their history
         """
 
-        history = Map({'nodes' : Map(), 'links' : Map(), 'institutions' : Map(), 'network': Map(self._history)})
+        history = Map({'nodes' : Map(), 'links' : Map(), 'institutions' : Map(), 'network': Map(self._history), 'other': Map()})
         
         for c in self.components:
             if c.base_type == 'node':
@@ -354,6 +356,9 @@ class Network(Container):
                 history['links'][c.name] = Map(c._history)
             elif c.base_type == 'institution':
                 history['institutions'][c.name] = Map(c._history)
+            else:
+                if include_all_components is True:
+                    history['other'][c.name] = Map(c._history)
 
         script_dir  = os.path.dirname(os.path.realpath(sys.argv[0]))
         hist_dir    = os.path.join(script_dir, 'history')
@@ -374,6 +379,11 @@ class Network(Container):
             with open(os.path.join(hist_dir, 'sim_'+now+'.pickle'), 'w') as f:
                 pickle.dump(history, f)
                 export_path = os.path.join(hist_dir, 'sim_'+now+'.pickle')
+    
+        if reset_history == True:
+            for c in self.components:
+                c.reset_history()
+            
         
         logging.info('History Dumped to %s' % export_path)
 
