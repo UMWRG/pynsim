@@ -379,6 +379,9 @@ class Network(Container):
             with open(os.path.join(hist_dir, 'sim_'+now+'.pickle'), 'w') as f:
                 pickle.dump(history, f)
                 export_path = os.path.join(hist_dir, 'sim_'+now+'.pickle')
+        except Exception:
+            logging.critical("Unable to export history. "
+                            "Is one of your component properties too complex, like a method?")
     
         if reset_history == True:
             self.reset_history()
