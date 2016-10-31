@@ -101,6 +101,22 @@ class Component(object):
     def __deepcopy__(self, memo):
         return self
 
+    def validate_history(self):
+        """
+            Check whether this comonent's history can be exported
+        """
+        try:
+            json.dumps(self._history)
+        except TypeError:
+            logging.warn("History of %s %s is not JSON compatible. Trying to pickle...", self.base_type, self.name)
+            pickle.dumps(self._history)
+        except TypeError:
+            logging.critical("History of %s %s cannot be exported. Skipping.", self.base_type, self.name)
+            return False
+
+        return True
+
+
 
 class Container(Component):
     """
@@ -336,7 +352,11 @@ class Network(Container):
         self.current_timestep = None
         self.current_timestep_idx = None
 
-    def export_history(self, export_type='pickle', reset_history=False, include_all_components=False):
+
+    def export_history(self, export_type='pickle',
+                      reset_history=False,
+                      include_all_components=False,
+                      validate_before_export=False):
         """
             Export the history of the network and all sub-components into a pickled
             file, timestamped and in a './history' folder.
@@ -350,6 +370,11 @@ class Network(Container):
         history = Map({'nodes' : Map(), 'links' : Map(), 'institutions' : Map(), 'network': Map(self._history), 'other': Map()})
         
         for c in self.components:
+
+            if validate_before_export is True:
+                if not c.validate_history():
+                    continue
+
             if c.base_type == 'node':
                 history['nodes'][c.name] = Map(c._history)
             elif c.base_type == 'link':
