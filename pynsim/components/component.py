@@ -19,7 +19,7 @@ import logging
 import os
 import time
 import pickle
-from copy import deepcopy
+from copy import deepcopy, copy
 import sys
 import datetime
 from pynsim.history import Map
@@ -42,12 +42,14 @@ class Component(object):
         self._history = dict()
 
         for k, v in self._properties.items():
-            setattr(self, k, v)
+            setattr(self, k, deepcopy(v))
             self._history[k] = []
 
         for k, v in kwargs.items():
             if k not in self._properties:
                 raise Exception("Invalid property %s. Allowed properties are: %s" % (k, self._properties.keys()))
+            else:
+                setattr(self, k, v)
 
     def get_history(self, attr_name=None):
         """
