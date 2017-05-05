@@ -371,9 +371,11 @@ class Network(Container):
             file, timestamped and in a './history' folder.
 
             args:
+                complete Boolean: When set to False, only export the properties set in the '_result_properties' attribute
                 export_type string:  The format of the exported file ('json' or 'pickle). Json is more human readable and has greater cross-compatibility, but pickles allow saving of more complex data structures (objects). Default is JSON.
                 reset_history Boolean: Empty the history dict for each component after export, useful when the same network is being used for multiple simulations.
                 include_all_components Boolean: If there are components in the network which are not nodes, links or institutions, use this flag to export their history
+                target_dir string: A path to the location of the history export (THis will create a 'history' folder within the target directory)
         """
 
         if complete is True:
