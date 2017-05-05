@@ -35,12 +35,17 @@ class Component(object):
     base_type = 'component'
     _properties = dict()
     _history = dict()
+    #To avoid exporting the history of every property, property names can 
+    #be specified here to explictly define which properties are results 
+    #(and are therefore to be exported).
+    _result_properties = []
+
 
     def __init__(self, name, **kwargs):
         self.component_type = self.__class__.__name__
         self.name = name
         self._history = dict()
-
+                
         for k, v in self._properties.items():
             setattr(self, k, deepcopy(v))
             self._history[k] = []
@@ -356,9 +361,11 @@ class Network(Container):
 
 
     def export_history(self, export_type='pickle',
+                      complete=True,
                       reset_history=False,
                       include_all_components=False,
-                      validate_before_export=False):
+                      validate_before_export=False,
+                      target_dir=None):
         """
             Export the history of the network and all sub-components into a pickled
             file, timestamped and in a './history' folder.
@@ -369,8 +376,22 @@ class Network(Container):
                 include_all_components Boolean: If there are components in the network which are not nodes, links or institutions, use this flag to export their history
         """
 
-        history = Map({'nodes' : Map(), 'links' : Map(), 'institutions' : Map(), 'network': Map(self._history), 'other': Map()})
-        
+        if complete is True:
+            logging.warning("Exporting the complete history can result in large files."+
+                            " Please consider setting 'complete=False' and specifying the"+
+                            "properties you wish to export in your agents class like so: _result_properties = [propa, prob, ...]")
+
+
+        history = Map({'nodes' : Map(), 'links' : Map(), 'institutions' : Map(), 'network': Map(), 'other': Map()})
+      
+        if complete is True:
+            Map(self._history)
+        else:
+            truncated_history = {}
+            for param_name in self._result_properties:
+                truncated_history[param_name] = self._history[param_name]
+            history['network'][self.name] = Map(truncated_history)
+    
         for c in self.components:
 
             if validate_before_export is True:
@@ -378,17 +399,42 @@ class Network(Container):
                     continue
 
             if c.base_type == 'node':
-                history['nodes'][c.name] = Map(c._history)
+                if complete is True:
+                    history['nodes'][c.name] = Map(c._history)
+                else:
+                    truncated_history = {}
+                    for param_name in c._result_properties:
+                        truncated_history[param_name] = c._history[param_name]
+                    history['nodes'][c.name] = Map(truncated_history)
             elif c.base_type == 'link':
-                history['links'][c.name] = Map(c._history)
+                if complete is True:
+                    history['links'][c.name] = Map(c._history)
+                else:
+                    truncated_history = {}
+                    for param_name in c._result_properties:
+                        truncated_history[param_name] = c._history[param_name]
             elif c.base_type == 'institution':
-                history['institutions'][c.name] = Map(c._history)
+                if complete is True:
+                    history['institutions'][c.name] = Map(c._history)
+                else:
+                    truncated_history = {}
+                    for param_name in c._result_properties:
+                        truncated_history[param_name] = c._history[param_name]
+
             else:
                 if include_all_components is True:
-                    history['other'][c.name] = Map(c._history)
+                    if complete is True:
+                        history['other'][c.name] = Map(c._history)
+                else:
+                    truncated_history = {}
+                    for param_name in c._result_properties:
+                        truncated_history[param_name] = c._history[param_name]
+    
+        if target_dir is None:
+            target_dir  = os.path.dirname(os.path.realpath(sys.argv[0]))
 
-        script_dir  = os.path.dirname(os.path.realpath(sys.argv[0]))
-        hist_dir    = os.path.join(script_dir, 'history')
+        hist_dir    = os.path.join(target_dir, 'history')
+
         if not os.path.exists(hist_dir):
             os.mkdir(hist_dir)
         
