@@ -25,7 +25,7 @@ class HistoryTest(unittest.TestCase):
             Test to ensure that dictionaries and other objects contained in history
             are not overwritten by maintaining references to the same objects.
         """
-        print "Testing..."
+        print("Testing...")
         network = Network("History Test Network")
         network.add_node(HistoryTestNode(x=0, y=0, name="Test Node"))
 

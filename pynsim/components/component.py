@@ -581,7 +581,7 @@ class Network(Container):
             mng.resize(1000, 700)
             plt.show(block=block)
 
-        except ImportError, e:
+        except ImportError:
             logging.critical("Cannot draw network. Please ensure matplotlib "
                              "and networkx are installed.")
 
@@ -621,7 +621,7 @@ class Network(Container):
 
             plt.show(block=True)
 
-        except ImportError, e:
+        except ImportError:
             logging.critical("Cannot plot. Please ensure matplotlib "
                              "and networkx are installed.")
 
@@ -689,7 +689,7 @@ class Network(Container):
                 plt.title('%s' % (component.name))
             plt.show(block=block)
 
-        except ImportError, e:
+        except ImportError:
             logging.critical("Cannot plot %s. Please ensure matplotlib "
                              "and networkx are installed."%property_name)
 

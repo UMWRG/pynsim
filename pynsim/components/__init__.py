@@ -16,4 +16,4 @@
 #    along with PyNSim.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from component import Network, Node, Link, Institution
+from .component import Network, Node, Link, Institution

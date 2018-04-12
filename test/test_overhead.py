@@ -17,7 +17,7 @@ class DummyNode(Node):
 class OverheadTest(unittest.TestCase):
 
     def setUp(self):
-        print "Setting Up"
+        print("Setting Up")
         comp_start = 32
         comp_multiplier = 2
         comp_range_value = 16
@@ -30,8 +30,8 @@ class OverheadTest(unittest.TestCase):
         self.num_nodes = [comp_start * comp_multiplier ** i
                           for i in range(comp_range_value)]
 
-        print self.num_timesteps
-        print self.num_nodes
+        print(self.num_timesteps)
+        print(self.num_nodes)
 
         self.result_matrix = {} #2D array for timesteps vs num nodes
 
@@ -44,7 +44,7 @@ class OverheadTest(unittest.TestCase):
         return time.time() * .1
 
     def test_overhead(self):
-        print "Testing overhead..."
+        print("Testing overhead...")
 
         #import cProfile
         #import StringIO
@@ -55,7 +55,7 @@ class OverheadTest(unittest.TestCase):
                 #pr = cProfile.Profile(timer=self.timer)
                 #pr.enable()
 
-                print "%s timesteps *  %s nodes"%(num_timesteps, num_nodes)
+                print("%s timesteps *  %s nodes"%(num_timesteps, num_nodes))
                 #Create a simulator object which will be run.
                 s = Simulator()
 

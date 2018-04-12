@@ -14,4 +14,4 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with PyNSim.  If not, see <http://www.gnu.org/licenses/>.
-from engine import Engine
+from .engine import Engine
