@@ -145,7 +145,7 @@ class Simulator(object):
 
             plt.show(block=True)
 
-        except ImportError, e:
+        except ImportError:
             logging.critical("Cannot plot. Please ensure matplotlib "
                              "and networkx are installed.")
 
@@ -187,12 +187,12 @@ class Simulator(object):
                     mpld3.plugins.connect(fig, tooltip)
                     i = i + 1
                 mpld3.show()
-            except Exception, e:
+            except Exception as e:
                 logging.exception(e)
                 logging.warn("For tooltips, install mpld3 (pip install mpld3)")
                 plt.show(block=True)
 
-        except ImportError, e:
+        except ImportError:
             logging.critical("Cannot plot. Please ensure matplotlib "
                              "and networkx are installed.")
 
