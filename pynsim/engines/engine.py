@@ -24,6 +24,7 @@ class Engine(object):
         self.timestep = None
         #indicates numerically the current timestep
         self.timestep_idx = None
+        self.iteration = None
     
     def run(self):
         pass
