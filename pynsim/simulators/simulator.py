@@ -38,10 +38,10 @@ class EngineIterator:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if isinstance(exc_type, StopIteration):
+        if exc_type is StopIteration:
             # Stop iteration is a valid exception to stop the context/iteration
-            return False
-        return True
+            return True
+        return False
 
     def __iter__(self):
         self._current_engine_index = 0
@@ -140,7 +140,6 @@ class Simulator(object):
             with EngineIterator(self, max_iterations=self.max_iterations) as manager:
                 for iteration, engine in manager:
                     logging.debug("Running engine %s", engine.name)
-
                     if self.record_time:
                         t = time.time()
 

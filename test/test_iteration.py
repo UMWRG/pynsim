@@ -24,6 +24,16 @@ class StopperEngine(Engine):
             raise StopIteration()
 
 
+class TypeErrorEngine(Engine):
+    def __init__(self, *args, **kwargs):
+        self.error_on_iteration = kwargs.pop('error_on_iteration', 1)
+        super(TypeErrorEngine, self).__init__(*args, **kwargs)
+
+    def run(self):
+        if self.iteration >= self.error_on_iteration:
+            raise TypeError('Something went wrong!')
+
+
 class TestIteration(unittest.TestCase):
     """ Test simulator iteration settings. """
     def test_default_iteration(self):
@@ -71,6 +81,19 @@ class TestIteration(unittest.TestCase):
         assert engine.iteration == 1
         assert engine.run_count == 1
         assert stopper_engine.iteration == 2
+
+    def test_engine_error(self):
+        """ Test an engine can raises a non-StopIteration error.
+        """
+        s = Simulator(max_iterations=5)
+        s.network = Network("Iteration test network")
+
+        s.add_engine(TypeErrorEngine(None, error_on_iteration=1))
+        s.add_engine(CountEngine(None))
+        s.timesteps = [0, ]
+
+        with self.assertRaises(TypeError):
+            s.start()
 
 
 if __name__ == '__main__':
