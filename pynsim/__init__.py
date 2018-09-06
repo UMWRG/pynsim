@@ -20,6 +20,8 @@ import os
 import sys
 level = 'INFO'
 
+version = "0.1.4"
+
 if os.name == "nt":
    logging.addLevelName( logging.INFO, logging.getLevelName(logging.INFO))
    logging.addLevelName( logging.DEBUG, logging.getLevelName(logging.DEBUG))
