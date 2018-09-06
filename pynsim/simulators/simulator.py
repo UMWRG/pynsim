@@ -58,6 +58,12 @@ class EngineIterator:
             self._current_iteration += 1
         return current_iteration, current_engine
 
+    def next(self):
+        """
+        This is for python 2 compatibility
+        """
+        return self.__next__()
+
 
 class Simulator(object):
 

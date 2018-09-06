@@ -138,26 +138,23 @@ if __name__ == '__main__':
 
     diversion_positions = range(12)
 
-    print "==================================================================="
-    print " Standard loop:"
-    print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    print
+    print( "===================================================================" )
+    print( " Standard loop:" )
+    print( "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" )
     memory_tracker = tracker.SummaryTracker()
-    memory_tracker.print_diff()
+    memory_tracker.print(_diff())
     for diversion_pos in diversion_positions:
         st = time.time()
         result = run_simulation(diversion_pos, discharge_data)
-        print "Simulation time: %s\n" % (time.time() - st)
-        print result
-        memory_tracker.print_diff()
+        print( "Simulation time: %s\n" % (time.time() - st))
+        print( result )
+        memory_tracker.print(_diff())
 
-    print
-    print "==================================================================="
-    print " Spawn process in each loop:"
-    print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    print
+    print( "===================================================================")
+    print( " Spawn process in each loop:")
+    print( "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     memory_tracker = tracker.SummaryTracker()
-    memory_tracker.print_diff()
+    memory_tracker.print(_diff())
     for diversion_pos in diversion_positions:
         st = time.time()
         q = Queue()
@@ -167,6 +164,6 @@ if __name__ == '__main__':
         p.start()
         p.join()
         result = q.get()
-        print "Simulation time: %s" % (time.time() - st)
-        print result
-        memory_tracker.print_diff()
+        print( "Simulation time: %s" % (time.time() - st()))
+        print( result )
+        memory_tracker.print(_diff() )
