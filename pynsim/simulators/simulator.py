@@ -16,22 +16,60 @@
 #    along with PyNSim.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-
 import time
 
-import multiprocessing
+
+class EngineIterator:
+    """ Iterator and context manager for running engines.
+
+    This object can be used as a context manager for iterating engines within
+    a `Simulator`. Within the context the manager can be used as an iterator
+    to cycle through the engines, in order, for a number of iterations. Iteration
+    is termined if `max_iterations` are reached or one of the engines raises
+    a `StopIteration` exception within the context.
+    """
+    def __init__(self, simulator, max_iterations=1):
+        self.simulator = simulator
+        self.max_iterations = max_iterations
+        self._current_engine_index = None
+        self._current_iteration = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is StopIteration:
+            # Stop iteration is a valid exception to stop the context/iteration
+            return True
+        return False
+
+    def __iter__(self):
+        self._current_engine_index = 0
+        self._current_iteration = 1
+        return self
+
+    def __next__(self):
+        current_engine = self.simulator.engines[self._current_engine_index]
+        current_iteration = self._current_iteration
+        if current_iteration > self.max_iterations:
+            raise StopIteration
+        self._current_engine_index = (self._current_engine_index + 1) % len(self.simulator.engines)
+        if self._current_engine_index == 0:
+            self._current_iteration += 1
+        return current_iteration, current_engine
 
 
 class Simulator(object):
 
     network = None
 
-    def __init__(self, network=None, record_time=False, progress=False):
+    def __init__(self, network=None, record_time=False, progress=False, max_iterations=1):
         self.engines = []
         #User defined timeseps
         self.timesteps = []
         self.record_time = record_time
         self.network = network
+        self.max_iterations = max_iterations
         # Track the cumilative time of the setup functions for the network,
         # nodes links and institutions. Also tracks the cumulative time of each
         # engine run. This dict should show where a slow-down is occurring. For
@@ -96,18 +134,22 @@ class Simulator(object):
                 self.timing['nodes']        += setup_timing['nodes']
 
             logging.debug("Starting engines")
-            for engine in self.engines:
-                logging.debug("Running engine %s", engine.name)
+            # Cycle through the engines up to the maximum number of iterations
+            # The context manager catches any `StopIteration` exceptions from the engines
+            # and terminates the context.
+            with EngineIterator(self, max_iterations=self.max_iterations) as manager:
+                for iteration, engine in manager:
+                    logging.debug("Running engine %s", engine.name)
+                    if self.record_time:
+                        t = time.time()
 
-                if self.record_time:
-                    t = time.time()
+                    engine.iteration = iteration
+                    engine.timestep = timestep
+                    engine.timestep_idx = idx
+                    engine.run()
 
-                engine.timestep = timestep
-                engine.timestep_idx = idx
-                engine.run()
-
-                if self.record_time:
-                    self.timing['engines'][engine.name] += time.time() - t
+                    if self.record_time:
+                        self.timing['engines'][engine.name] += time.time() - t
 
             self.network.post_process()
 
