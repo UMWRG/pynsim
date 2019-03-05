@@ -772,6 +772,18 @@ class Node(Component):
         """
         return self.out_links
 
+    def get_level(self, count=1):
+        """
+            calculates how far away this node is from the 'starting' node.
+            Beware, this has the potentiaal to cause infinite loops, so use with care.
+        """
+
+        if len(self.upstream_nodes) > 0:
+            level = max([n.get_level(count=count) for n in self.upstream_nodes])
+        else:
+            level = 0
+        
+        return count + level
 
 class Link(Component):
     """
