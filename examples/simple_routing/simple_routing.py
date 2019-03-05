@@ -185,7 +185,7 @@ network = ReservoirSystem(name="Example reservoir system")
 network.add_nodes(R1, R2, R3, R4)
 network.add_links(L1, L2, L3)
 
-print("R4 Level: {0}".format(network.get_node('R4').get_level()))
+print("R4 Depth: {0}".format(network.get_node('R4').get_depth()))
 
 network.timestep = 86400 * 30  # one month
 network.tol = 0.1  # Tolerance value for mass balance error
