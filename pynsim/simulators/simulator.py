@@ -121,7 +121,7 @@ class Simulator(object):
 
         logging.info("Starting simulation")
 
-        if initialise:
+        if initialise is True:
             self.initialise()
 
         for idx, timestep in tqdm(enumerate(self.timesteps),
