@@ -108,12 +108,10 @@ class Simulator(object):
         logging.info("Starting simulation")
 
         if self.network is None:
-            logging.critical("No network to simulate!")
-            return
+            raise RuntimeError("No network to simulate!")
 
         if len(self.timesteps) == 0:
-            logging.critical("No timesteps specified!")
-            return
+            raise RuntimeError("No timesteps specified!")
 
         for engine in self.engines:
             logging.debug("Setting up engine %s", engine.name)
