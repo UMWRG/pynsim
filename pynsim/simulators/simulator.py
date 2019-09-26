@@ -91,7 +91,20 @@ class Simulator(object):
         my_engines = ",".join([m.name for m in self.engines])
         return "Simulator(engines=[%s])" % (my_engines)
 
-    def start(self):
+    def initialise(self):
+        logging.info("Initialising simulation")
+
+        if self.network is None:
+            raise RuntimeError("No network to simulate!")
+
+        if len(self.timesteps) == 0:
+            raise RuntimeError("No timesteps specified!")
+
+        for engine in self.engines:
+            logging.debug("Setting up engine %s", engine.name)
+            engine.initialise()
+
+    def start(self, initialise=True):
         # Provide dummy function to simplify code below
         def tqdm(iterable, **kwargs):
             return iterable
@@ -107,15 +120,8 @@ class Simulator(object):
 
         logging.info("Starting simulation")
 
-        if self.network is None:
-            raise RuntimeError("No network to simulate!")
-
-        if len(self.timesteps) == 0:
-            raise RuntimeError("No timesteps specified!")
-
-        for engine in self.engines:
-            logging.debug("Setting up engine %s", engine.name)
-            engine.initialise()
+        if initialise is True:
+            self.initialise()
 
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
