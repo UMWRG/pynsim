@@ -126,6 +126,9 @@ class Simulator(object):
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
 
+            """
+                The following code is executed for each timestep
+            """
             self.current_timestep = timestep
 
             self.network.set_timestep(timestep, idx)
@@ -149,6 +152,9 @@ class Simulator(object):
             # and terminates the context.
             with EngineIterator(self, max_iterations=self.max_iterations) as manager:
                 for iteration, engine in manager:
+                    """
+                        The following code is executed for each engine inside the same timestep using the engine iterator.
+                    """
                     logging.debug("Running engine %s", engine.name)
                     if self.record_time:
                         t = time.time()
@@ -163,10 +169,14 @@ class Simulator(object):
 
             self.network.post_process()
 
+            """
+                Here the current NETWORK status has to be serialised in sqllite DB
+            """
+
         for engine in self.engines:
             logging.debug("Teearing Down engine %s", engine.name)
             engine.teardown()
-        
+
         logging.debug("Finished")
 
     def plot_timing(self):
