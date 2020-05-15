@@ -35,8 +35,8 @@ class Component(object):
     base_type = 'component'
     _properties = dict()
     _history = dict()
-    #To avoid exporting the history of every property, property names can 
-    #be specified here to explictly define which properties are results 
+    #To avoid exporting the history of every property, property names can
+    #be specified here to explictly define which properties are results
     #(and are therefore to be exported).
     _result_properties = []
 
@@ -45,7 +45,7 @@ class Component(object):
         self.component_type = self.__class__.__name__
         self.name = name
         self._history = dict()
-                
+
         for k, v in self._properties.items():
             setattr(self, k, deepcopy(v))
             self._history[k] = []
@@ -72,7 +72,7 @@ class Component(object):
             used for multiple simulations.
         """
         for k in self._properties:
-            self._history[k] = []        
+            self._history[k] = []
 
     def get_properties(self):
         """
@@ -85,6 +85,9 @@ class Component(object):
         return properties
 
     def post_process(self):
+        """
+            This method is called to save the current status of the component _properties inside the _history array
+        """
         for k in self._properties:
             attr = getattr(self, k)
             if isinstance(attr, dict) or isinstance(attr, list):
@@ -385,7 +388,7 @@ class Network(Container):
 
 
         history = Map({'nodes' : Map(), 'links' : Map(), 'institutions' : Map(), 'network': Map(), 'other': Map()})
-      
+
         if complete is True:
             Map(self._history)
         else:
@@ -393,7 +396,7 @@ class Network(Container):
             for param_name in self._result_properties:
                 truncated_history[param_name] = self._history[param_name]
             history['network'][self.name] = Map(truncated_history)
-    
+
         for c in self.components:
 
             if validate_before_export is True:
@@ -431,7 +434,7 @@ class Network(Container):
                     truncated_history = {}
                     for param_name in c._result_properties:
                         truncated_history[param_name] = c._history[param_name]
-    
+
         if target_dir is None:
             target_dir  = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -439,7 +442,7 @@ class Network(Container):
 
         if not os.path.exists(hist_dir):
             os.mkdir(hist_dir)
-        
+
         now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 
         export_path = None
@@ -457,13 +460,13 @@ class Network(Container):
         except Exception:
             logging.critical("Unable to export history. "
                             "Is one of your component properties too complex, like a method?")
-    
+
         if reset_history == True:
             self.reset_history()
             for c in self.components:
                 c.reset_history()
-            
-        
+
+
         logging.info('History Dumped to %s' % export_path)
 
     def set_timestep(self, timestamp, timestep_idx):
@@ -816,4 +819,3 @@ class Institution(Container):
 
     def __init__(self, name, **kwargs):
         super(Institution, self).__init__(name, **kwargs)
-
