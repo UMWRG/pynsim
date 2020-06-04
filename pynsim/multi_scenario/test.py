@@ -81,7 +81,7 @@ class MultiIndexedData(object):
 
 class ScenariosManager(object):
     """
-        SM
+        Multi Scenario Manager
     """
     _multi_scenario={
         "names":[],
