@@ -57,14 +57,14 @@ print(cp.a)
 
 
 sm = ScenariosManager()
-sm.add_scenario(name="timesteps",data=[1,2,3])
+sm.add_scenario(name={"a":"timesteps"},data=[1,2,3])
 sm.add_scenario(name="r1.inflow",data=[10,11,13])
 sm.add_scenario(name="r2.inflow",data=[4,5,0,20,21])
 sm.add_scenario(name="r2.demand",data=[20,21])
-sm.add_scenario(name="r3.pippo",data=[9,8,7,6,5,4,3,2,1,20,21])
+# sm.add_scenario(name="r3.pippo",data=[9,8,7,6,5,4,3,2,1,20,21])
 sm.add_scenario(name="r4.pluto",data=999)
 sm.add_scenario(name=None,data=111)
-sm.add_scenario(name="r4.minnie",data=[{"nome":12},{"cognome":12}])
+# sm.add_scenario(name="r4.minnie",data=[{"nome":12},{"cognome":12}])
 
 for x in sm.get_scenarios_iterator("full"):
     logger.info(x)

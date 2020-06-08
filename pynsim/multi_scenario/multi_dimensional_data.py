@@ -88,27 +88,11 @@ class MultiDimensionalData(object):
     def get_next_data(self):
         """
             Gets the next index (not yet requested) and returns the associated data
+            The index is incremented
         """
-        next_data = self.get_current_data()
-        self._increment_index()
+        data = self.get_current_data(increment_index=True)
 
-        # next_index = self.get_next_index()
-        # next_data = []
-        # for col_count, index in enumerate(next_index):
-        #     # print(f"col_count {col_count}, index: {index}")
-        #     if self._output_format=="simple":
-        #         next_data.append(self._data[col_count][index])
-        #     elif self._output_format=="full":
-        #         next_data.append({
-        #             "name" : self._names[col_count],
-        #             "reference" : self._references[col_count],
-        #             "data": self._data[col_count][index]
-        #         })
-        #     else:
-        #         raise Exception(f"The format {self._output_format} is not allowed!")
-        #
-
-        return next_data
+        return data
 
     #######################################################################################
 
@@ -122,7 +106,6 @@ class MultiDimensionalData(object):
         data_index = self.get_current_index()
         next_data = []
         for col_count, index in enumerate(data_index):
-            # print(f"col_count {col_count}, index: {index}")
             if self._output_format=="simple":
                 next_data.append(self._data[col_count][index])
             elif self._output_format=="full":
@@ -133,7 +116,6 @@ class MultiDimensionalData(object):
                 })
             else:
                 raise Exception(f"The format {self._output_format} is not allowed!")
-
 
         if increment_index is True:
             self._increment_index()
@@ -175,8 +157,6 @@ class MultiDimensionalData(object):
         if self._iteration_finished:
             raise StopIteration
         return self._indexes.copy()
-
-
 
     def get_current_iteration_count(self):
         """
