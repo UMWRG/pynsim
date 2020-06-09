@@ -18,14 +18,17 @@
 class Engine(object):
     name   = "A generic pynsim engine"
     target = None
+    simulator = None
+    UUID = None
 
     def __init__(self, target):
-        self.target = target 
+        self.target = target
         self.timestep = None
         #indicates numerically the current timestep
         self.timestep_idx = None
         self.iteration = None
-    
+        self.UUID = None
+
     def run(self):
         pass
 
