@@ -25,6 +25,12 @@ import datetime
 from pynsim.history import Map
 import json
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s:%(levelname)s:%(name)s:%(lineno)s:%(message)s"
+)
+logger = logging.getLogger(__name__)
+
 class Component(object):
     """
         A top level object, from which Networks, Nodes, Links and Institions
@@ -35,26 +41,81 @@ class Component(object):
     base_type = 'component'
     _properties = dict()
     _history = dict()
-    #To avoid exporting the history of every property, property names can 
-    #be specified here to explictly define which properties are results 
+    #To avoid exporting the history of every property, property names can
+    #be specified here to explictly define which properties are results
     #(and are therefore to be exported).
     _result_properties = []
 
+    # List of fields that will be managed through the scenario manager. They are set at class level
+    _scenarios_parameters = {}
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, simulator=None, **kwargs):
+        logger.info(f"Component class {self.__class__.__name__}")
+        logger.info(f"Name class {name.__class__.__name__}")
+        logger.info(f"Simulator class {simulator.__class__.__name__}")
+
+        # Reference to the simulator
+        self._simulator = None
+        self.bind_simulator(simulator) # To properly bind the simulator!
+
         self.component_type = self.__class__.__name__
+        if name is None:
+            raise Exception("The 'name' of a pynsim component is mandatory and unique inside the same components set!")
+
         self.name = name
         self._history = dict()
-                
+
         for k, v in self._properties.items():
             setattr(self, k, deepcopy(v))
             self._history[k] = []
 
         for k, v in kwargs.items():
-            if k not in self._properties:
+            if k == "_scenarios_parameters":
+                setattr(self, k, v)
+            elif k not in self._properties:
                 raise Exception("Invalid property %s. Allowed properties are: %s" % (k, self._properties.keys()))
             else:
                 setattr(self, k, v)
+
+
+    def __setattr__(self, name, value):
+        logger.info("set attr {}: {}".format(name, value))
+        if name is not "_simulator" and self._simulator is None:
+            raise Exception("The current Component does not have any simulator assigned!")
+
+        if name == "_scenarios_parameters":
+            logger.info("Setting _scenarios_parameters")
+            # time.sleep(5)
+            pass
+            ##self.__class__.__name__
+        else:
+            if name in self._properties:
+                logger.warning("This is a property: %s", name)
+            elif name in self._scenarios_parameters:
+                logger.warning("This is a scenario parameter: %s", name)
+                self._simulator.get_scenario_manager().add_scenario(object_type=self.__class__.__name__, object_name = self.name, object_reference = self, property_name=name, property_data=value )
+                time.sleep(2)
+            else:
+                logger.error("This is a NOT property: %s", name)
+
+        super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
+        # self._attributes[name] = value
+
+    def add_scenario(self, name, value):
+        logger.error("self.__class__.__name__ %s", self.__class__.__name__)
+        logger.error("self.__name__ %s", self.name)
+        time.sleep(2)
+
+
+    def bind_simulator(self, simulator=None):
+        """
+            Command to set the simulator reference
+        """
+        if self._simulator is None:
+            if simulator is not None:
+                self._simulator = simulator
+            else:
+                raise Exception("The simulator reference cannot be None")
 
     def get_history(self, attr_name=None):
         """
@@ -72,7 +133,7 @@ class Component(object):
             used for multiple simulations.
         """
         for k in self._properties:
-            self._history[k] = []        
+            self._history[k] = []
 
     def get_properties(self):
         """
@@ -220,11 +281,12 @@ class Container(Component):
         """
             Add a single node to the network
         """
-        self.nodes.append(node)
-        self.components.append(node)
-
+        ## Check if the new node has an unique name inside the network
         if node.name in self._node_map:
             raise Exception("An node with the name %s is already defined. Node names must be unique."%node.name)
+
+        self.nodes.append(node)
+        self.components.append(node)
 
         self._node_map[node.name] = node
 
@@ -236,7 +298,6 @@ class Container(Component):
         nodes_of_type = self._node_type_map.get(node.component_type, [])
         nodes_of_type.append(node)
         self._node_type_map[node.component_type] = nodes_of_type
-
 
     def add_nodes(self, *args):
         """
@@ -385,7 +446,7 @@ class Network(Container):
 
 
         history = Map({'nodes' : Map(), 'links' : Map(), 'institutions' : Map(), 'network': Map(), 'other': Map()})
-      
+
         if complete is True:
             Map(self._history)
         else:
@@ -393,7 +454,7 @@ class Network(Container):
             for param_name in self._result_properties:
                 truncated_history[param_name] = self._history[param_name]
             history['network'][self.name] = Map(truncated_history)
-    
+
         for c in self.components:
 
             if validate_before_export is True:
@@ -431,7 +492,7 @@ class Network(Container):
                     truncated_history = {}
                     for param_name in c._result_properties:
                         truncated_history[param_name] = c._history[param_name]
-    
+
         if target_dir is None:
             target_dir  = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -439,7 +500,7 @@ class Network(Container):
 
         if not os.path.exists(hist_dir):
             os.mkdir(hist_dir)
-        
+
         now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 
         export_path = None
@@ -457,13 +518,13 @@ class Network(Container):
         except Exception:
             logging.critical("Unable to export history. "
                             "Is one of your component properties too complex, like a method?")
-    
+
         if reset_history == True:
             self.reset_history()
             for c in self.components:
                 c.reset_history()
-            
-        
+
+
         logging.info('History Dumped to %s' % export_path)
 
     def set_timestep(self, timestamp, timestep_idx):
@@ -723,6 +784,10 @@ class Node(Component):
         A node represents an individual actor in a network, in water resources
         this is normally a single building or small geogrephical area with
         particular characteristics
+
+        When subclassing a node, if overloading the __setattr__ method, please add the following line at the top of the overloading method
+
+
     """
     #This never changes
     base_type = 'node'
@@ -741,6 +806,8 @@ class Node(Component):
     def __repr__(self):
         return "%s(name=%s, x=%s, y=%s)" % (self.__class__.__name__,
                                             self.name, self.x, self.y)
+
+
 
     @property
     def upstream_nodes(self):
@@ -816,4 +883,3 @@ class Institution(Container):
 
     def __init__(self, name, **kwargs):
         super(Institution, self).__init__(name, **kwargs)
-
