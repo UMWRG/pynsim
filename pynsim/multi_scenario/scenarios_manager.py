@@ -25,13 +25,14 @@ class ScenariosManager(object):
 
     #################################################
 
-    def add_scenario(self, name=None, reference=None, data=None):
+    # def add_scenario(self, object_type=None, object_name=None, reference=None, data=None):
+    def add_scenario(self, object_reference=None, object_type=None, object_name=None, property_name=None, property_data=None):
         """
             Used to add a new scenario to the multi dimensional index
         """
-        self._multi_scenario["names"].append(name)
+        self._multi_scenario["names"].append(object_name)
 
-        self._multi_id.add_data(name=name, reference=reference, data=data)
+        self._multi_id.add_data(object_reference=object_reference, object_type=object_type, object_name=object_name, property_name=property_name, property_data=property_data)
 
     ###################################################
 
