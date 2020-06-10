@@ -17,6 +17,14 @@
 
 import logging
 import time
+from pynsim.multi_scenario import ScenariosManager
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s:%(levelname)s:%(name)s:%(lineno)s:%(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 
 class EngineIterator:
@@ -74,7 +82,9 @@ class Simulator(object):
         #User defined timeseps
         self.timesteps = []
         self.record_time = record_time
-        self.network = network
+        if network is not None:
+            self.add_network(network)
+
         self.max_iterations = max_iterations
         # Track the cumilative time of the setup functions for the network,
         # nodes links and institutions. Also tracks the cumulative time of each
@@ -87,9 +97,15 @@ class Simulator(object):
         self.progress = progress
         self.current_timestep = None
 
+        # This is to manage all the scenarios
+        self.scenarios_manager = ScenariosManager()
+
     def __repr__(self):
         my_engines = ",".join([m.name for m in self.engines])
         return "Simulator(engines=[%s])" % (my_engines)
+
+    def get_scenario_manager(self):
+        return self.scenarios_manager
 
     def initialise(self):
         logging.info("Initialising simulation")
@@ -114,6 +130,12 @@ class Simulator(object):
                 from tqdm import tqdm
             except ImportError:
                 logging.warn("Please install 'tqdm' to display progress bar.")
+
+        # Testing that every engine has the simulator setup properly
+        for engine in self.engines:
+            if engine.simulator is None:
+                raise Exception("The engine X has not the simulator reference properly setup!")
+
 
         for engine in self.engines:
             self.timing['engines'][engine.name] = 0
@@ -166,7 +188,7 @@ class Simulator(object):
         for engine in self.engines:
             logging.debug("Teearing Down engine %s", engine.name)
             engine.teardown()
-        
+
         logging.debug("Finished")
 
     def plot_timing(self):
@@ -266,8 +288,23 @@ class Simulator(object):
 
         self.engines.append(engine)
 
+        engine.simulator = self
+
+
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
+        logger.info("set attr {}: {}".format(name, value))
+        if name == "network":
+            """
+                Linking the network to the simulator
+            """
+            value.bind_simulator(self)
+
+
+
     def add_network(self, network):
         self.network = network
+
 
     def set_timesteps(self, timesteps, start_time=None, frequency=None,
                       periods=None, end_time=None):
