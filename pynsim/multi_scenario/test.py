@@ -4,7 +4,10 @@ import array
 import pandas as pd
 import uuid
 from pynsim.multi_scenario import ScenariosManager
+from pynsim.components import Node
 
+from pynsim.simulators import Simulator
+simulation = Simulator()
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -26,7 +29,7 @@ class Component(object):
         logger.info("Initialising MSData")
 
     def __getattr__(self, name):
-        logger.info("get atree {}".format(name))
+        logger.info("get attr {}".format(name))
         return super().__getattr__(name)
         # return self._attributes[name]
 
@@ -35,45 +38,126 @@ class Component(object):
         self._attributes[name] = value
         super().__setattr__(name, value)
 
-logger.info("Initialising MSData")
+class Reservoir(Node):
+    """A surface reservoir with a monthly target release.
 
-cp = Component()
-cp.test()
+    Variables: S (storage)
+               actual_release
+    Parameters: min_stor
+                max_stor
+                init_stor
+                target_release
+                inflow
+    """
 
-cp.a=1
-cp.a=2
+    _properties = {'S': None,
+                   'actual_release': None,
+                   'min_stor': None,
+                   'max_Stor': None,
+                   'init_stor': None,
+                   'target_release': None,
+                   'inflow': None,
+                   }
 
-print(cp.a)
+    _scenarios_parameters = {
+        '_target_release': 'target_release',
+        '_inflow':'inflow'
+    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs) # This allows to propagate the __init__
+        # List of fields that will be managed through the scenario manager
+
+    def setup(self, t):
+        self.target_release = self._target_release[t]
+        self.inflow = self._inflow[t]
 
 
-# a = np.array([[{'name':'timestep', 'value':1},{'name':'timestep', 'value':2}], [{'name':'pippo', 'value':2}, {'name':'pippo', 'value':4}, {'name':'pippo', 'value':4}]])
+
+
+
+
+n1 = Reservoir(name="r1", x=10,y=20, simulator=simulation)
+
+# n1.add_scenario(type="node", name="r1.inflow",data=[10,11,13])
+n1._inflow = {0: 4,
+              1: 6,
+              2: 7,
+              3: 12,
+              4: 17,
+              5: 17,
+              6: 22,
+              7: 15,
+              8: 12,
+              9: 9,
+              10: 6,
+              11: 5,
+              }
+
+n2 = Reservoir(name="r2", x=10,y=20, simulator=simulation)
+n2._inflow = [{0: 14,
+              1: 16,
+              2: 17,
+              3: 12,
+              4: 17,
+              5: 17,
+              6: 22,
+              7: 15,
+              8: 12,
+              9: 9,
+              10: 6,
+              11: 5,
+              },
+              {0: 4,
+                1: 6,
+                2: 7,
+                3: 12,
+                4: 17,
+                5: 17,
+                6: 22,
+                7: 15,
+                8: 12,
+                9: 9,
+                10: 6,
+                11: 5,
+                }
+                ]
+
+n3 = Reservoir(name="r3", x=10,y=20, simulator=simulation)
+
+n3._inflow = [1,2,3,4]
+
+# logger.info("Initialising MSData")
+
+# cp = Component()
+# cp.test()
 #
-# for index, x in np.ndenumerate(a):
+# cp.a=1
+# cp.a=2
 #
-#     print(index, x)
-#     print(range(len(a)))
-#     for al in range(len(a)):
-#         print(a[al][index[al]])
+# print(cp.a)
 
 
-sm = ScenariosManager()
-sm.add_scenario(name={"a":"timesteps"},data=[1,2,3])
-sm.add_scenario(name="r1.inflow",data=[10,11,13])
-sm.add_scenario(name="r2.inflow",data=[4,5,0,20,21])
-sm.add_scenario(name="r2.demand",data=[20,21])
-# sm.add_scenario(name="r3.pippo",data=[9,8,7,6,5,4,3,2,1,20,21])
-sm.add_scenario(name="r4.pluto",data=999)
-sm.add_scenario(name=None,data=111)
-# sm.add_scenario(name="r4.minnie",data=[{"nome":12},{"cognome":12}])
-
-for x in sm.get_scenarios_iterator("full"):
-    logger.info(x)
-    pass
-
-# xx=sm.get_scenarios_iterator("simple")
-# #
-# for x in xx:
+# sm = ScenariosManager()
+# sm.add_scenario(type="node", name={"a":"timesteps"},data=[1,2,3])
+# sm.add_scenario(type="node", name="r1.inflow",data=[10,11,13])
+# sm.add_scenario(type="node", name="r2.inflow",data=[4,5,0,20,21])
+# sm.add_scenario(type="node", name="r2.demand",data=[20,21])
+# # sm.add_scenario(name="r3.pippo",data=[9,8,7,6,5,4,3,2,1,20,21])
+# sm.add_scenario(type="node", name="r4.pluto",data=999)
+# sm.add_scenario(type="node", name=None,data=111)
+# # sm.add_scenario(name="r4.minnie",data=[{"nome":12},{"cognome":12}])
+#
+# for x in sm.get_scenarios_iterator("full"):
 #     logger.info(x)
+#     pass
+
+sm = simulation.get_scenario_manager()
+for x in sm.get_scenarios_iterator("full"):
+     logger.info(x)
+     pass
+
+
 """
 a. simulator.timesteps is always an array
 1 - Esplicity defined in code as a list
