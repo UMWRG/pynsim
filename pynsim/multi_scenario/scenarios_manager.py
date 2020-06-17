@@ -1,5 +1,5 @@
 import logging
-from pynsim.multi_scenario import MultiDimensionalData
+from .multi_dimensional_data import MultiDimensionalData
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -12,20 +12,19 @@ class ScenariosManager(object):
     """
         Multi Scenario Manager
     """
-    _multi_scenario={
-         "names":[],
-    }
-    _multi_id=None
-    def __init__(self):
+    def __init__(self, save_components_history=True):
         """
             Manager initialization
         """
         logger.info("ScenariosManager INIT")
-        self._multi_id = MultiDimensionalData()
+        self._multi_scenario={
+             "names":[],
+        }
+        self._multi_id = MultiDimensionalData(save_components_history = save_components_history)
+        self._save_components_history = save_components_history
 
     #################################################
 
-    # def add_scenario(self, object_type=None, object_name=None, reference=None, data=None):
     def add_scenario(self, object_reference=None, object_type=None, object_name=None, property_name=None, property_data=None):
         """
             Used to add a new scenario to the multi dimensional index
@@ -46,9 +45,7 @@ class ScenariosManager(object):
                 for x in sm.get_scenarios_iterator("full"):
                     logger.info(x)
         """
-        logger.info("ScenariosManager get_scenarios_iterator 1")
         self._multi_id.set_output_format(format)
-        logger.info("ScenariosManager get_scenarios_iterator 2")
         return iter(self._multi_id)
 
     ################################################################
@@ -59,11 +56,24 @@ class ScenariosManager(object):
         """
         return self._multi_id.get_current_index()
 
+    def get_current_index_tuple(self):
+        """
+            Returns the current index of the multidimensional data manager as a tuple without affecting the index
+        """
+        return self._multi_id.get_current_index_tuple()
+
+
     def get_current_data(self):
         """
             Returns the current data of the multidimensional data manager without affecting the index
         """
         return self._multi_id.get_current_data()
+
+    def get_current_component_property_data(self, object_type=None, object_name=None, property_name=None):
+        """
+            Returns the current scenario data for the object which tuple is passed
+        """
+        return self._multi_id.get_current_object_property_data(object_type=object_type, object_name=object_name, property_name=property_name)
 
     #######################################
 
