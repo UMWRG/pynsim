@@ -18,6 +18,7 @@
 import logging
 import time
 from pynsim.multi_scenario import ScenariosManager
+import jsonpickle
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -77,7 +78,7 @@ class Simulator(object):
 
     network = None
 
-    def __init__(self, network=None, record_time=False, progress=False, max_iterations=1):
+    def __init__(self, network=None, record_time=False, progress=False, max_iterations=1, save_components_history=True):
         self.engines = []
         #User defined timeseps
         self.timesteps = []
@@ -97,12 +98,21 @@ class Simulator(object):
         self.progress = progress
         self.current_timestep = None
 
+        self._save_components_history = save_components_history
+
         # This is to manage all the scenarios
-        self.scenarios_manager = ScenariosManager()
+        self.scenarios_manager = ScenariosManager(save_components_history=save_components_history)
+
+        self.components_registered_list = []
+
+
 
     def __repr__(self):
         my_engines = ",".join([m.name for m in self.engines])
         return "Simulator(engines=[%s])" % (my_engines)
+
+    def get_save_components_history_flag(self):
+        return self._save_components_history
 
     def get_scenario_manager(self):
         return self.scenarios_manager
@@ -119,6 +129,14 @@ class Simulator(object):
         for engine in self.engines:
             logging.debug("Setting up engine %s", engine.name)
             engine.initialise()
+
+    def register_component(self, component_ref):
+        self.components_registered_list.append(component_ref)
+
+    def show_registered_components(self):
+        for comp in self.components_registered_list:
+            logging.info("Component Class Name %s", comp.get_class_name())
+            logging.info("Object Name %s", comp.get_object_name())
 
     def start(self, initialise=True):
         # Provide dummy function to simplify code below
@@ -145,45 +163,95 @@ class Simulator(object):
         if initialise is True:
             self.initialise()
 
+
+        self.show_registered_components()
+        # input("show_registered_components : Press Enter to continue...")
+
+        """
+            Iteration over the timesteps
+        """
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
 
+            logging.error("==================================================================================")
+            logging.error("Timestep %s", timestep)
+            logging.error("==================================================================================")
+
             self.current_timestep = timestep
+            for component_registered in self.components_registered_list:
+                logger.warning(component_registered)
+
+                component_registered.set_current_timestep(timestep)
+
+                logger.warning(component_registered.get_status())
+                ## input("Set current timestep - Press Enter to continue...")
 
             self.network.set_timestep(timestep, idx)
 
-            logging.debug("Setting up network")
-            t = time.time()
-            self.network.setup(timestep)
-            self.timing['network'] += time.time() - t
+            """
+                Iteration over the scenarios
+            """
+            scenarios_manager = self.get_scenario_manager()
+            for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
+                """
+                    Gets current scenario data and index
+                """
+                scenario_item_data  = scenario_item["data"]
+                scenario_item_index = scenario_item["index"]
+                scenario_item_tuple = scenario_item["tuple"]
+                logging.warning("+================================================================")
+                logging.warning("| scenario_item_tuple %s", scenario_item_tuple)
+                logging.warning("+================================================================")
 
-            logging.debug("Setting up components")
-            setup_timing = self.network.setup_components(timestep, self.record_time)
+                logging.warning(scenario_item_data)
 
-            if self.record_time:
-                self.timing['institutions'] += setup_timing['institutions']
-                self.timing['links']        += setup_timing['links']
-                self.timing['nodes']        += setup_timing['nodes']
+                ### input("^ scenario_item_data ^")
 
-            logging.debug("Starting engines")
-            # Cycle through the engines up to the maximum number of iterations
-            # The context manager catches any `StopIteration` exceptions from the engines
-            # and terminates the context.
-            with EngineIterator(self, max_iterations=self.max_iterations) as manager:
-                for iteration, engine in manager:
-                    logging.debug("Running engine %s", engine.name)
-                    if self.record_time:
-                        t = time.time()
+                """
+                    Setting the current index tuple for the current scenario for every component
+                """
+                for component_item in scenario_item_data:
+                    component_item["object_reference"].set_current_scenario_index_tuple(scenario_item_tuple)
+                    # replacing the values from the multiscenario obj
+                    component_item["object_reference"].replace_internal_value(component_item["property_name"],component_item["property_data"])
 
-                    engine.iteration = iteration
-                    engine.timestep = timestep
-                    engine.timestep_idx = idx
-                    engine.run()
+                # input("set_current_scenario_index_tuple - Press Enter to continue...")
 
-                    if self.record_time:
-                        self.timing['engines'][engine.name] += time.time() - t
 
-            self.network.post_process()
+                logging.debug("Setting up network")
+                t = time.time()
+                self.network.setup(timestep)
+                self.timing['network'] += time.time() - t
+
+                logging.debug("Setting up components")
+                setup_timing = self.network.setup_components(timestep, self.record_time)
+
+                if self.record_time:
+                    self.timing['institutions'] += setup_timing['institutions']
+                    self.timing['links']        += setup_timing['links']
+                    self.timing['nodes']        += setup_timing['nodes']
+
+                logging.debug("Starting engines")
+                # Cycle through the engines up to the maximum number of iterations
+                # The context manager catches any `StopIteration` exceptions from the engines
+                # and terminates the context.
+                # input("Press Enter to continue...")
+                with EngineIterator(self, max_iterations=self.max_iterations) as manager:
+                    for iteration, engine in manager:
+                        logging.debug("Running engine %s", engine.name)
+                        if self.record_time:
+                            t = time.time()
+
+                        engine.iteration = iteration
+                        engine.timestep = timestep
+                        engine.timestep_idx = idx
+                        engine.run()
+
+                        if self.record_time:
+                            self.timing['engines'][engine.name] += time.time() - t
+
+                self.network.post_process()
+                # input("Press Enter to continue...")
 
         for engine in self.engines:
             logging.debug("Teearing Down engine %s", engine.name)
@@ -341,6 +409,52 @@ class Simulator(object):
             link.reset_history()
         for institution in self.network.institutions:
             institution.reset_history()
+
+
+    def export_history_multi(self, property_names, export_file):
+        """
+            New export with multiscenario data/results
+        """
+        try:
+            import pandas as pd
+
+            export_data = pd.DataFrame(index=self.timesteps)
+
+            history = {}
+            scenarios_manager = self.get_scenario_manager()
+            for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
+                scenario_item_data  = scenario_item["data"]
+                scenario_item_index = scenario_item["index"]
+                scenario_item_tuple = scenario_item["tuple"]
+                history[scenario_item_tuple] = {}
+                for ts in self.timesteps:
+                    history[scenario_item_tuple][ts] = {}
+                    for comp in self.components_registered_list:
+                        history[scenario_item_tuple][ts][comp.name]={}
+                        comp.set_current_scenario_index_tuple(scenario_item_tuple)
+                        comp.set_current_timestep(ts)
+                        for prop in comp.get_properties():
+                            history[scenario_item_tuple][ts][comp.name][prop]=comp.get_current_property_value(prop)
+
+
+
+            logger.warning("HISTORY %r",jsonpickle.encode(history))
+
+
+
+            if len(export_data.columns) == 0:
+                logging.warn("No components found with property %s"
+                             % property_names)
+                return
+            else:
+                export_data.to_csv(export_file)
+        except ValueError:
+            logging.critical("Unable to export export %s to csv. Only simple types (numbers, strings) can be"
+                               "exported to CSV.", property_names)
+
+        except ImportError:
+            logging.critical("Cannot export history. Please ensure pandas is"
+                             "installed." % property_names)
 
     def export_history(self, property_name, export_file):
         """
