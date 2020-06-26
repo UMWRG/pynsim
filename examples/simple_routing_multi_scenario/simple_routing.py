@@ -120,7 +120,7 @@ simulation.start()
 
 props = ['S', 'actual_release', 'min_stor', 'max_stor', 'init_stor', 'target_release', 'inflow']
 
-simulation.dump_components_status()
+# simulation.dump_components_status()
 
 simulation.export_history_multi(props,"./logs/simple-routing")
 
@@ -147,7 +147,7 @@ import matplotlib.pyplot as plt
 #         plt.legend(['Target release', 'Actual release'])
 #
 # plt.show()
-print("START")
+# print("START")
 
 # scenarios_manager = self.get_scenario_manager()
 for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("full"):
@@ -156,12 +156,12 @@ for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("f
     scenario_item_tuple = scenario_item["tuple"]
     # print(scenario_item)
     # print(scenario_item_index)
-    print(scenario_item_tuple)
+    # print(scenario_item_tuple)
     local_history={}
     plt.figure(1)
     for i, node in enumerate(simulation.network.nodes):
-        print("=================================================")
-        print("Name %s", node.name)
+        # print("=================================================")
+        # print("Name %s", node.name)
         # print(node.get_full_status())
         # for prop in node.get_full_status()["properties"]:
         #     print("--------------------------------------------")
@@ -176,10 +176,10 @@ for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("f
         local_history["target_release"] = node.get_multi_scenario_history("target_release")
         local_history["actual_release"] = node.get_multi_scenario_history("actual_release")
         local_history["inflow"] = node.get_multi_scenario_history("inflow")
-        print(local_history)
+        # print(local_history)
 
         local_history_dict= node.get_multi_scenario_history_all_properties()
-        print(local_history_dict)
+        # print(local_history_dict)
         # input("hisotry ^^^^^")
 
         plt.subplot(2, 4, i + 1)
