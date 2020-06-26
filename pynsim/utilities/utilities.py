@@ -39,17 +39,15 @@ class Utilities:
         """
         with open(data_file_name) as json_file:
             data = json.load(json_file)
-            # print(data)
             for comp_name in data:
                 if comp_name in simulation_components:
-                    # print(comp_name)
                     props_evaluated={}
                     cno=0
                     while True:
                         cno=cno+1
-                        print("----------------------------------------------------------")
-                        print(f"Start Cycle number {cno}")
-                        print("----------------------------------------------------------")
+                        # print("----------------------------------------------------------")
+                        # print(f"Start Cycle number {cno}")
+                        # print("----------------------------------------------------------")
                         # input("")
                         props_to_evaluate={}
                         for prop_name in data[comp_name]:
@@ -62,10 +60,9 @@ class Utilities:
                             break
 
                         for prop_name in props_to_evaluate:
-                            print("Property name: %s", prop_name)
-                            # print(props_to_evaluate[comp_name][prop_name])
+                            # print("Property name: %s", prop_name)
                             val = props_to_evaluate[prop_name]
-                            print("Property value: %s", val)
+                            # print("Property value: %s", val)
 
                             m = re.search('\{\{([^}]*)\}\}', str(val))
 
@@ -74,14 +71,14 @@ class Utilities:
 
                             if m is not None:
                                 # The property contains an expression. Trying to evaluate it
-                                print(m.group(1))
+                                # print(m.group(1))
                                 expression = m.group(1).strip()
-                                print(expression)
+                                # print(expression)
                                 new_built_expression=expression
 
                                 last_position = 0
                                 for m in re.finditer(r"(self\.([a-zA-Z_.]+))", expression):
-                                    print( '%02d-%02d: %s : %s' % (m.start(), m.end(), m.group(1), m.group(2)))
+                                    # print( '%02d-%02d: %s : %s' % (m.start(), m.end(), m.group(1), m.group(2)))
                                     depending_var_name = m.group(2)
 
                                     if depending_var_name not in props_evaluated:
@@ -107,10 +104,10 @@ class Utilities:
 
 
                             if property_fully_evaluated is True:
-                                print("Evaluate")
-                                print(f"{prop_name} = {val}")
+                                # print("Evaluate")
+                                # print(f"{prop_name} = {val}")
                                 setattr(simulation_components[comp_name], prop_name, val)
                                 props_evaluated[prop_name] = val
-                            else:
-                                print("NOT Evaluate")
-                            print("==================")
+                            # else:
+                            #     print("NOT Evaluate")
+                            # print("==================")
