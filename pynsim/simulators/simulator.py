@@ -17,16 +17,18 @@
 
 import logging
 import time
-from pynsim.multi_scenario import ScenariosManager
+from pynsim.multi_scenario import ScenariosManager, OverallStatus
+
 import jsonpickle
+import json
+from datetime import datetime
+import os
 
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s:%(levelname)s:%(name)s:%(lineno)s:%(message)s"
 )
 logger = logging.getLogger(__name__)
-
-
 
 class EngineIterator:
     """ Iterator and context manager for running engines.
@@ -102,6 +104,7 @@ class Simulator(object):
 
         # This is to manage all the scenarios
         self.scenarios_manager = ScenariosManager(save_components_history=save_components_history)
+        self.overall_status = OverallStatus(save_components_history=save_components_history)
 
         self.components_registered_list = []
 
@@ -116,6 +119,9 @@ class Simulator(object):
 
     def get_scenario_manager(self):
         return self.scenarios_manager
+
+    def get_overall_status(self):
+        return self.overall_status
 
     def initialise(self):
         logging.info("Initialising simulation")
@@ -178,16 +184,12 @@ class Simulator(object):
             logging.error("==================================================================================")
 
             self.current_timestep = timestep
+            # Setting the current timestep for each registered component
             for component_registered in self.components_registered_list:
-                logger.warning(component_registered)
-
                 component_registered.set_current_timestep(timestep)
-
-                logger.warning(component_registered.get_status())
-                ## input("Set current timestep - Press Enter to continue...")
+                # logger.info(component_registered.name)
 
             self.network.set_timestep(timestep, idx)
-
             """
                 Iteration over the scenarios
             """
@@ -214,6 +216,9 @@ class Simulator(object):
                     component_item["object_reference"].set_current_scenario_index_tuple(scenario_item_tuple)
                     # replacing the values from the multiscenario obj
                     component_item["object_reference"].replace_internal_value(component_item["property_name"],component_item["property_data"])
+                    # logger.info(component_item["object_name"])
+                    # logger.info(component_item["property_name"])
+                    #input("Press")
 
                 # input("set_current_scenario_index_tuple - Press Enter to continue...")
 
@@ -239,6 +244,7 @@ class Simulator(object):
                 with EngineIterator(self, max_iterations=self.max_iterations) as manager:
                     for iteration, engine in manager:
                         logging.debug("Running engine %s", engine.name)
+                        # input(f"Engine: {engine.name}^^^^^^^^^^^^^")
                         if self.record_time:
                             t = time.time()
 
@@ -258,6 +264,9 @@ class Simulator(object):
             engine.teardown()
 
         logging.debug("Finished")
+
+        logging.warning("Overall %r", self.overall_status.dump())
+        # input("OK")
 
     def plot_timing(self):
         """
@@ -361,7 +370,7 @@ class Simulator(object):
 
     def __setattr__(self, name, value):
         super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
-        logger.info("set attr {}: {}".format(name, value))
+        # logger.info("set attr {}: {}".format(name, value))
         if name == "network":
             """
                 Linking the network to the simulator
@@ -411,15 +420,59 @@ class Simulator(object):
             institution.reset_history()
 
 
-    def export_history_multi(self, property_names, export_file):
+    def dump_components_status(self):
+        # logger.info("dump_components_status")
+        # try:
+        import os
+        # path=os.path.dirname(os.path.abspath(__file__))
+        # path = path.replace(" ", "\ ")
+
+        full_status={}
+
+        now = datetime.now()
+        date_time = now.strftime("%Y-%m-%d.%H-%M-%S")
+
+        folder_name=f"./logs/{date_time}"
+
+        os.makedirs(folder_name)
+
+        for comp in self.components_registered_list:
+            file = open(f"{folder_name}/status-component-{comp.name}.txt", "w")
+            # logger.info(comp.get_status_repr())
+            # logger.info(json.loads(comp.get_status_repr()))
+            logger.info(comp.get_full_status())
+            #input("take a look")
+            logger.info(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
+            #input("take a look")
+            # file.write(json.dumps(json.loads(comp.get_status_repr()), indent=4, sort_keys=True))
+            file.write(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
+
+            # file.write(comp.get_status_repr())
+            #full_status[comp.name] = json.loads(comp.get_status_repr())
+            full_status[comp.name] = comp.get_full_status()
+            file.close
+
+        file = open(f"{folder_name}/status-all-components.txt", "w")
+        # file.write(json.dumps(history, indent=4, sort_keys=True))
+        file.write(json.dumps(full_status, default=lambda o: o.__dict__, indent=2, sort_keys=True))
+        file.close
+
+        # except ValueError:
+        #     logging.critical("Unable to export the components status to csv. Only simple types (numbers, strings) can be"
+        #                        "exported to CSV.")
+
+    def export_history_multi(self, property_names=[], export_file_prefix=None):
         """
             New export with multiscenario data/results
         """
+        if export_file_prefix is None:
+            raise Exception("The filename prefix is mandatory")
         try:
             import pandas as pd
 
-            export_data = pd.DataFrame(index=self.timesteps)
+            # export_data = pd.DataFrame(index=self.timesteps)
 
+            multi_history = {}
             history = {}
             scenarios_manager = self.get_scenario_manager()
             for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
@@ -434,20 +487,56 @@ class Simulator(object):
                         comp.set_current_scenario_index_tuple(scenario_item_tuple)
                         comp.set_current_timestep(ts)
                         for prop in comp.get_properties():
-                            history[scenario_item_tuple][ts][comp.name][prop]=comp.get_current_property_value(prop)
+                            if prop in property_names:
+                                history[scenario_item_tuple][ts][comp.name][prop]=comp.get_current_property_value(prop)
+                                key = f"{comp.name}-{prop}"
+                                if not key in multi_history:
+                                    multi_history[key] = {}
+
+                                multi_history[key][ts] = comp.get_current_property_value(prop)
 
 
 
-            logger.warning("HISTORY %r",jsonpickle.encode(history))
+            # logger.warning("HISTORY %r",jsonpickle.encode(history))
+
+            logger.warning("self.timesteps %r", self.timesteps)
+            # logger.warning("MULTI HISTORY %r",jsonpickle.encode(multi_history))
+
+            import os
+            path=os.path.dirname(os.path.abspath(__file__))
+            path = path.replace(" ", "\ ")
+            file = open(f"./logs/history.txt", "w")
+            file.write(json.dumps(history, indent=4, sort_keys=True))
+            file.close
+
+            for tuple in history:
+                data_for_scenario = history[tuple]
+                # export_data = pd.DataFrame(data = data_for_scenario)
+                # export_data = export_data.T
+                # logger.info(export_data)
+                export_data = pd.DataFrame(index=self.timesteps)
+                # logger.info(export_data)
+                for ts in data_for_scenario:
+                    data_for_ts = data_for_scenario[ts]
+                    for comp_name in data_for_ts:
+                        comp_props = data_for_ts[comp_name]
+                        for prop in comp_props:
+                            key = f"{comp_name}-{prop}"
+                            export_data['%s %s' % (comp_name, prop)] = multi_history[key]
+
+                export_data = pd.DataFrame(data = multi_history)
 
 
 
-            if len(export_data.columns) == 0:
-                logging.warn("No components found with property %s"
-                             % property_names)
-                return
-            else:
-                export_data.to_csv(export_file)
+                if len(export_data.columns) == 0:
+                    logging.warn("No components found with property %s"
+                                 % property_names)
+                    return
+                else:
+                    export_data.to_csv(f"{export_file_prefix}-{tuple}.txt")
+
+
+
         except ValueError:
             logging.critical("Unable to export export %s to csv. Only simple types (numbers, strings) can be"
                                "exported to CSV.", property_names)
