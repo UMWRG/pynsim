@@ -66,8 +66,8 @@ class Component(object):
     # _internal_status_fields = dict()
 
     def __init__(self, name, simulator=None, **kwargs):
-        logger.info(f"Component class {self.__class__.__name__}")
-        logger.info(f"Name class {name.__class__.__name__}")
+        # logger.info(f"Component class {self.__class__.__name__}")
+        # logger.info(f"Name class {name.__class__.__name__}")
 
         # Reference to the simulator
         self._simulator = None
@@ -75,7 +75,7 @@ class Component(object):
             logger.warning("k: %s, v: %s", k, v)
             input("Wait")
 
-        logger.info(f"Simulator class {simulator.__class__.__name__}")
+        # logger.info(f"Simulator class {simulator.__class__.__name__}")
 
         self.bind_simulator(simulator) # To properly bind the simulator!
 
@@ -89,11 +89,10 @@ class Component(object):
         self._status = ComponentStatus(component_ref = self, properties = deepcopy(self._properties))
 
         for k, v in self._properties.items():
-            logger.warning("1) k: %s, v: %s", k, v)
+            # logger.warning("1) k: %s, v: %s", k, v)
 
             setattr(self, k, deepcopy(v))
-            print("SSS")
-            print(self._history)
+
             self._history[k] = []
 
         for k, v in kwargs.items():
@@ -120,11 +119,11 @@ class Component(object):
             raise Exception("The current Component does not have any simulator assigned!")
 
         if name == "_scenarios_parameters":
-            logger.info("Setting _scenarios_parameters")
+            # logger.info("Setting _scenarios_parameters")
             pass
         else:
             if name in self._properties:
-                logger.warning("This is a property: %s", name)
+                # logger.warning("This is a property: %s", name)
 
                 """
                     If the property is valid for status
@@ -234,7 +233,7 @@ class Component(object):
             Returns the property value identified by current timestep and current scenario tuple
         """
         comp_history = self._history
-        print(comp_history)
+        # print(comp_history)
 
         if property_name in comp_history:
             prop_history = comp_history[property_name]
@@ -258,7 +257,7 @@ class Component(object):
             default otherwise
         """
         comp_history = self._history
-        print(comp_history)
+        # print(comp_history)
 
         if property_name in comp_history:
             prop_history = comp_history[property_name]
