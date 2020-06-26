@@ -54,7 +54,6 @@ class MultiDimensionalData(object):
         """
             Get next data
         """
-        #logger.info("MultiDimensionalData NEXT")
         return self.get_next_data()
 
     ###################################################
@@ -98,7 +97,7 @@ class MultiDimensionalData(object):
             raise Exception(f"The tuple ({unique_id}) has been already defined!")
 
         new_object = PropertyObjectData(object_reference=object_reference, object_type=object_type, object_name=object_name, property_name=property_name, property_data=property_data)
-        # self._objects_map[unique_id] = new_object
+
         self._objects_map[unique_id] = len(self._objects_list)
         self._indexes.append(0)
         self._objects_list.append(new_object)
@@ -141,7 +140,7 @@ class MultiDimensionalData(object):
             current_data = []
 
         for col_count, index in enumerate(data_index):
-            # current_data.append(self._objects_list[col_count].get_data(index=index, format="full"))
+
             item_data = self._objects_list[col_count].get_data(index=index, format=self._output_format)
             if self._output_format == "tree":
                 """
@@ -187,7 +186,6 @@ class MultiDimensionalData(object):
             logger.info("index: %s, index_value: %s", index, index_value)
             logger.info("Object data %s", self._objects_list[index].get_current_indexed_data())
 
-        #        for main_list_index, datum  in reversed(list(enumerate(self._data))):
         for main_list_index, obj  in reversed(list(enumerate(self._objects_list))):
 
             datum_length=obj.data_length()
