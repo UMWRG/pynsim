@@ -22,7 +22,7 @@ class MultiDimensionalData(object):
     """
 
     def __init__(self, save_components_history = True):
-        logger.info("MultiDimensionalData INIT")
+        # logger.info("MultiDimensionalData INIT")
 
         self._objects_map = {} # Map of the indexes used for all the oject indexed ty the tuple (object type, object name, property name)
 
@@ -41,13 +41,13 @@ class MultiDimensionalData(object):
         """
             Init the iterator (if used with the iter function)
         """
-        logger.info("MultiDimensionalData ITER")
+        # logger.info("MultiDimensionalData ITER")
         self._iterations_counter = 1
         self._iteration_finished = False
         for i, index in enumerate(self._indexes):
-            logger.info(i)
+            # logger.info(i)
             self._indexes[i] = 0
-        logger.info(self._indexes)
+        # logger.info(self._indexes)
         return self
 
     def __next__(self):
@@ -181,10 +181,10 @@ class MultiDimensionalData(object):
 
         flag_update_index_done = False
 
-        logger.info("CURRENT VALUE")
-        for index, index_value in enumerate(self._indexes):
-            logger.info("index: %s, index_value: %s", index, index_value)
-            logger.info("Object data %s", self._objects_list[index].get_current_indexed_data())
+        # logger.info("CURRENT VALUE")
+        # for index, index_value in enumerate(self._indexes):
+        #     logger.info("index: %s, index_value: %s", index, index_value)
+        #     logger.info("Object data %s", self._objects_list[index].get_current_indexed_data())
 
         for main_list_index, obj  in reversed(list(enumerate(self._objects_list))):
 
