@@ -3,6 +3,7 @@ import types
 from copy import deepcopy, copy
 import json
 import jsonpickle
+import time
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -32,11 +33,26 @@ class PropertyStatus(object):
         self._timesteps = []
 
     def __repr__(self):
-        return '{ \
-            "name": {}, \
-            "save_components_history": {}, \
-            "status": {} \
-        }'.format(self.name, self._save_components_history, self._status)
+        repr={
+            "name": self.name,
+            "save_components_history": self._save_components_history,
+            "status": self._status
+        }
+        return json.dumps(
+            repr,
+            default=lambda o: o.__dict__,
+            sort_keys=True,
+            indent=2
+        )
+
+    def get_status(self):
+        repr={
+            "name": self.name,
+            "save_components_history": self._save_components_history,
+            "status": self._status
+        }
+        return repr
+
 
 
     def set_current_timestep(self, timestep):
@@ -45,7 +61,7 @@ class PropertyStatus(object):
         """
         if timestep is None:
             return
-        # logger.error(timestep)
+
         self._status.current_timestep = timestep
         if timestep not in self._status.history:
             self._status.history[ self._status.current_timestep ] = {
@@ -94,6 +110,18 @@ class PropertyStatus(object):
 
         self._status.history[ self._status.current_timestep ]["list"][ list_index ] = value
 
+        # logger.info("=========================================================")
+        # logger.info("------------------- set_value ---------------------------")
+        # logger.info("self._status.current_timestep: %s", self._status.current_timestep)
+        # logger.info("self._status.current_index_tuple: %s", self._status.current_index_tuple)
+        # logger.info( "Component Class: %s, Name: %s", self._component_ref.get_class_name(), self._component_ref.name )
+        # logger.info( "Nome: %s, Start Value: %r",     self.name,                            self._status.start_value )
+        # logger.info( "Nome: %s, Dictionary: %r",      self.name,                            jsonpickle.encode(self._status.history[ self._status.current_timestep ]))
+        # logger.info("=========================================================")
+        # time.sleep(1)
+
+
+
     def get_current_value(self):
         """
             Gets the value for the current timestep/scenario_index_tuple
@@ -104,9 +132,15 @@ class PropertyStatus(object):
             raise Exception("The current index_tuple has not been set properly!")
 
 
-        logger.info( "Component Class: %s, Name: %s", self._component_ref.get_class_name(), self._component_ref.name )
-        logger.info( "Nome: %s, Start Value: %r",     self.name,                            self._status.start_value )
-        logger.info( "Nome: %s, Dictionary: %r",      self.name,                            jsonpickle.encode(self._status.history[ self._status.current_timestep ]))
+        # logger.info("=========================================================")
+        # logger.info("----------- get_current_value -----------------")
+        # logger.info( "Component Class: %s, Name: %s", self._component_ref.get_class_name(), self._component_ref.name )
+        # logger.info( "Nome: %s, Start Value: %r",     self.name,                            self._status.start_value )
+        # logger.info( "Nome: %s, Dictionary: %r",      self.name,                            jsonpickle.encode(self._status.history[ self._status.current_timestep ]))
+        # logger.info("self._status.current_timestep: %s", self._status.current_timestep)
+        # logger.info("self._status.current_index_tuple: %s", self._status.current_index_tuple)
+        # logger.info("=========================================================")
+        # time.sleep(1)
 
         return_value = self._status.start_value
 
