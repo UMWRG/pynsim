@@ -43,8 +43,8 @@ class Reservoir(Node):
         # input("Setup Node {}: _target_release: {}".format(self.name, self._target_release[t]))
         # input("Setup Node {}: _inflow: {}".format(self.name, self._inflow[t]))
 
-        print(self.name)
-        print(self._target_release)
+        # print(self.name)
+        # print(self._target_release)
 
 
         self.target_release = self._target_release[str(t)]
