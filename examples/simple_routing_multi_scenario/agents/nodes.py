@@ -23,23 +23,29 @@ class Reservoir(Node):
     _properties = {'S': None,
                    'actual_release': None,
                    'min_stor': None,
-                   'max_Stor': None,
+                   'max_stor': None,
                    'init_stor': None,
                    'target_release': None,
                    'inflow': None,
                    }
 
+    _scenarios_parameters = {
+        '_target_release':  'target_release',
+        '_inflow':          'inflow'
+    }
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs) # This allows to propagate the __init__
         # List of fields that will be managed through the scenario manager
-        self._scenarios_parameters = [
-                       'min_stor',
-                       'max_Stor',
-                       'init_stor',
-                       'target_release',
-                       'inflow'
-                       ]
 
     def setup(self, t):
-        self.target_release = self._target_release[t]
-        self.inflow = self._inflow[t]
+
+        # input("Setup Node {}: _target_release: {}".format(self.name, self._target_release[t]))
+        # input("Setup Node {}: _inflow: {}".format(self.name, self._inflow[t]))
+
+        print(self.name)
+        print(self._target_release)
+
+
+        self.target_release = self._target_release[str(t)]
+        self.inflow = self._inflow[str(t)]
