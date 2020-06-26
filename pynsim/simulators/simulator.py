@@ -171,7 +171,6 @@ class Simulator(object):
 
 
         self.show_registered_components()
-        # input("show_registered_components : Press Enter to continue...")
 
         """
             Iteration over the timesteps
@@ -207,8 +206,6 @@ class Simulator(object):
 
                 logging.warning(scenario_item_data)
 
-                ### input("^ scenario_item_data ^")
-
                 """
                     Setting the current index tuple for the current scenario for every component
                 """
@@ -216,11 +213,6 @@ class Simulator(object):
                     component_item["object_reference"].set_current_scenario_index_tuple(scenario_item_tuple)
                     # replacing the values from the multiscenario obj
                     component_item["object_reference"].replace_internal_value(component_item["property_name"],component_item["property_data"])
-                    # logger.info(component_item["object_name"])
-                    # logger.info(component_item["property_name"])
-                    #input("Press")
-
-                # input("set_current_scenario_index_tuple - Press Enter to continue...")
 
 
                 logging.debug("Setting up network")
@@ -370,7 +362,7 @@ class Simulator(object):
 
     def __setattr__(self, name, value):
         super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
-        # logger.info("set attr {}: {}".format(name, value))
+
         if name == "network":
             """
                 Linking the network to the simulator
@@ -421,11 +413,7 @@ class Simulator(object):
 
 
     def dump_components_status(self):
-        # logger.info("dump_components_status")
-        # try:
         import os
-        # path=os.path.dirname(os.path.abspath(__file__))
-        # path = path.replace(" ", "\ ")
 
         full_status={}
 
@@ -438,28 +426,21 @@ class Simulator(object):
 
         for comp in self.components_registered_list:
             file = open(f"{folder_name}/status-component-{comp.name}.txt", "w")
-            # logger.info(comp.get_status_repr())
-            # logger.info(json.loads(comp.get_status_repr()))
+
             logger.info(comp.get_full_status())
-            #input("take a look")
+
             logger.info(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
-            #input("take a look")
-            # file.write(json.dumps(json.loads(comp.get_status_repr()), indent=4, sort_keys=True))
+
             file.write(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
 
-            # file.write(comp.get_status_repr())
-            #full_status[comp.name] = json.loads(comp.get_status_repr())
             full_status[comp.name] = comp.get_full_status()
             file.close
 
         file = open(f"{folder_name}/status-all-components.txt", "w")
-        # file.write(json.dumps(history, indent=4, sort_keys=True))
+
         file.write(json.dumps(full_status, default=lambda o: o.__dict__, indent=2, sort_keys=True))
         file.close
 
-        # except ValueError:
-        #     logging.critical("Unable to export the components status to csv. Only simple types (numbers, strings) can be"
-        #                        "exported to CSV.")
 
     def export_history_multi(self, property_names=[], export_file_prefix=None):
         """
@@ -497,10 +478,7 @@ class Simulator(object):
 
 
 
-            # logger.warning("HISTORY %r",jsonpickle.encode(history))
-
             logger.warning("self.timesteps %r", self.timesteps)
-            # logger.warning("MULTI HISTORY %r",jsonpickle.encode(multi_history))
 
             import os
             path=os.path.dirname(os.path.abspath(__file__))
@@ -511,11 +489,9 @@ class Simulator(object):
 
             for tuple in history:
                 data_for_scenario = history[tuple]
-                # export_data = pd.DataFrame(data = data_for_scenario)
-                # export_data = export_data.T
-                # logger.info(export_data)
+
                 export_data = pd.DataFrame(index=self.timesteps)
-                # logger.info(export_data)
+
                 for ts in data_for_scenario:
                     data_for_ts = data_for_scenario[ts]
                     for comp_name in data_for_ts:
@@ -525,8 +501,6 @@ class Simulator(object):
                             export_data['%s %s' % (comp_name, prop)] = multi_history[key]
 
                 export_data = pd.DataFrame(data = multi_history)
-
-
 
                 if len(export_data.columns) == 0:
                     logging.warn("No components found with property %s"
