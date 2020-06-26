@@ -2,6 +2,7 @@ import logging
 import time
 from copy import deepcopy, copy
 import jsonpickle
+import json
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -40,7 +41,7 @@ class ComponentStatus(object):
             "properties": properties
         }
         for property_name in self._status["properties"]:
-            logger.info("self.init_property_object(%s)",property_name)
+            # logger.info("self.init_property_object(%s)",property_name)
             self.init_property_object(property_name)
 
 
@@ -74,15 +75,9 @@ class ComponentStatus(object):
         """
             Set a property value using the current value
         """
-        logger.error("component_status.set_property_value")
-        logger.warning("%r",jsonpickle.encode(self._status["properties"]))
-        #logger.warning("%s",self._status["properties"])
-        # if name == "timestep":
-        #     time.sleep(5)
+        # logger.error("component_status.set_property_value")
         self.init_property_object(name)
-        # import pudb; pudb.set_trace()
         self._status["properties"][name].set_value(value)
-        logger.info(jsonpickle.encode(self._status["properties"]))
 
     def get_property_current_value(self, name):
         self.init_property_object(name)
@@ -102,6 +97,18 @@ class ComponentStatus(object):
         for property in self._status["properties"]:
             self._status["properties"][property].set_current_timestep(current_timestep)
 
+    def get_current_scenario_index_tuple(self):
+        """
+            Gets current scenario tuple
+        """
+        return self._status["current_multiscenario_index"]["tuple"]
+
+    def get_current_timestep(self):
+        """
+            Gets current timestep
+        """
+        return self._status["current_timestep"]
+
     def set_current_scenario_index_tuple(self, current_multiscenario_index_tuple):
         """
             Sets current scenario tuple and array starting from tuple
@@ -118,3 +125,29 @@ class ComponentStatus(object):
         """
         self._status["current_multiscenario_index"]["array"] = current_multiscenario_index_array
         self._status["current_multiscenario_index"]["tuple"] = ",".join(current_multiscenario_index_array)
+
+    def __repr__(self):
+        """
+            Dumps the status as an array of properties
+        """
+        output = {
+            "properties": []
+        }
+
+        for property_name in self._status["properties"]:
+            output["properties"].append(json.loads(repr(self._status["properties"][property_name])))
+
+        return repr(output)
+
+    def get_full_status(self):
+        """
+            Dumps the status as an array of properties
+        """
+        output = {
+            "properties": []
+        }
+
+        for property_name in self._status["properties"]:
+            output["properties"].append(self._status["properties"][property_name].get_status())
+
+        return output
