@@ -43,3 +43,4 @@ else:
 from .components import Network, Node, Link, Institution
 from .engines import Engine
 from .simulators import Simulator
+from .utilities import Utilities
