@@ -130,14 +130,11 @@ class Component(object):
                     If the property is valid for status
                 """
 
-                # logger.warning("object %s, name: %s, val: %s", self.name, name, value)
                 self._status.set_property_value(name, value)
-                ##input("CHECK")
 
                 self._simulator.get_overall_status().set_value(self.name, name, self._status.get_current_scenario_index_tuple(), self._status.get_current_timestep(), value)
 
             elif name in self._scenarios_parameters:
-                # logger.warning("This is a scenario parameter: %s", name)
                 self._simulator.get_scenario_manager().add_scenario(
                     object_type=self.__class__.__name__,
                     object_name = self.name,
@@ -145,17 +142,14 @@ class Component(object):
                     property_name=name,
                     property_data=value
                 )
-                #time.sleep(1)
             else:
                 pass
-                # logger.error("This is a NOT property: %s", name)
 
         super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
 
 
 
     def __getattribute__(self, name):
-        # logger.warning(f"__getattribute__: {name}")
         attrs_to_return_directly=[
             "__class__", "_properties","_scenarios_parameters",
             "name", "description","base_type","_simulator",
@@ -167,21 +161,18 @@ class Component(object):
             local_status = self._status
             local_simulator = self._simulator
             return local_simulator.get_overall_status().get_component_history_as_dict(local_name, local_status.get_current_scenario_index_tuple())
-            # return object.__getattribute__(self, name)
         elif name in attrs_to_return_directly:
             return object.__getattribute__(self, name)
         else:
-            # logger.error("ELSE")
             local_properties = self._properties
-            # logger.info(local_properties)
             if name in local_properties:
                 local_name =  self.name
                 local_status = self._status
                 local_simulator = self._simulator
-                return local_simulator.get_overall_status().get_value(local_name, name, local_status.get_current_scenario_index_tuple(), local_status.get_current_timestep())
+                # return local_simulator.get_overall_status().get_value(local_name, name, local_status.get_current_scenario_index_tuple(), local_status.get_current_timestep())
+                return self.get_current_history_value(name)
             else:
                 pass
-                #logger.error("Is not a property")
         return object.__getattribute__(self, name)
 
 
@@ -205,7 +196,6 @@ class Component(object):
         """
         super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
 
-
     def get_status(self):
         return self._status
 
@@ -218,7 +208,6 @@ class Component(object):
     def add_scenario(self, name, value):
         logger.error("self.__class__.__name__ %s", self.__class__.__name__)
         logger.error("self.__name__ %s", self.name)
-        #time.sleep(2)
 
     def get_class_name(self):
         return self.__class__.__name__
@@ -246,7 +235,7 @@ class Component(object):
         """
         comp_history = self._history
         print(comp_history)
-        # input("get_current_history_value")
+
         if property_name in comp_history:
             prop_history = comp_history[property_name]
             if len(prop_history) == 0:
@@ -270,7 +259,7 @@ class Component(object):
         """
         comp_history = self._history
         print(comp_history)
-        # input("get_previous_history_value")
+
         if property_name in comp_history:
             prop_history = comp_history[property_name]
             if len(prop_history) == 0:
