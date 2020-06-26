@@ -44,26 +44,28 @@ class Component(object):
     description = None
     base_type = 'component'
 
-    # This dict contains both the current scenarios properties names and the status properties names
+    # This dict contains both the current scenarios properties names
+    # and the status properties names
     _properties = dict()
     _history = dict()
-    #To avoid exporting the history of every property, property names can
-    #be specified here to explictly define which properties are results
-    #(and are therefore to be exported).
+    # To avoid exporting the history of every property, property names can
+    # be specified here to explictly define which properties are results
+    # (and are therefore to be exported).
     _result_properties = []
 
-    # List of fields that will be managed through the scenario manager. They are set at class level. THese are the parameter set for providing the full scenarios
+    # List of fields that will be managed through the scenario manager.
+    # They are set at class level.
+    # These are the parameter set for providing the full scenarios
     _scenarios_parameters = dict()
 
     # List of fields that does not vary through the simulation
-    _invariant_parameters = dict()
+    # _invariant_parameters = dict()
 
     # This dictionary contains the fields that represents the internal status.
     # These fields will be managed by the component status object
     # _internal_status_fields = dict()
 
-    #def __init__(self, name, simulator=None, **kwargs):
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, simulator=None, **kwargs):
         logger.info(f"Component class {self.__class__.__name__}")
         logger.info(f"Name class {name.__class__.__name__}")
 
@@ -72,7 +74,7 @@ class Component(object):
         for k, v in kwargs.items():
             logger.warning("k: %s, v: %s", k, v)
             input("Wait")
-        input("ok")
+
         logger.info(f"Simulator class {simulator.__class__.__name__}")
 
         self.bind_simulator(simulator) # To properly bind the simulator!
@@ -87,12 +89,17 @@ class Component(object):
         self._status = ComponentStatus(component_ref = self, properties = deepcopy(self._properties))
 
         for k, v in self._properties.items():
-            logger.warning("k: %s, v: %s", k, v)
+            logger.warning("1) k: %s, v: %s", k, v)
 
             setattr(self, k, deepcopy(v))
+            print("SSS")
+            print(self._history)
             self._history[k] = []
 
         for k, v in kwargs.items():
+            """
+                Eventual properties set at definition time
+            """
             logger.warning("k: %s, v: %s", k, v)
             input("Wait")
 
@@ -109,15 +116,12 @@ class Component(object):
 
 
     def __setattr__(self, name, value):
-        logger.info("set attr {}: {}".format(name, value))
         if name is not "_simulator" and self._simulator is None:
             raise Exception("The current Component does not have any simulator assigned!")
 
         if name == "_scenarios_parameters":
             logger.info("Setting _scenarios_parameters")
-            # time.sleep(5)
             pass
-            ##self.__class__.__name__
         else:
             if name in self._properties:
                 logger.warning("This is a property: %s", name)
@@ -125,12 +129,15 @@ class Component(object):
                 """
                     If the property is valid for status
                 """
-                #if name in self._internal_status_fields:
-                logger.warning("object %s, name: %s, val: %s", self.name, name, value)
+
+                # logger.warning("object %s, name: %s, val: %s", self.name, name, value)
                 self._status.set_property_value(name, value)
+                ##input("CHECK")
+
+                self._simulator.get_overall_status().set_value(self.name, name, self._status.get_current_scenario_index_tuple(), self._status.get_current_timestep(), value)
 
             elif name in self._scenarios_parameters:
-                logger.warning("This is a scenario parameter: %s", name)
+                # logger.warning("This is a scenario parameter: %s", name)
                 self._simulator.get_scenario_manager().add_scenario(
                     object_type=self.__class__.__name__,
                     object_name = self.name,
@@ -140,11 +147,57 @@ class Component(object):
                 )
                 #time.sleep(1)
             else:
-                logger.error("This is a NOT property: %s", name)
+                pass
+                # logger.error("This is a NOT property: %s", name)
 
         super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
-        # self._attributes[name] = value
 
+
+
+    def __getattribute__(self, name):
+        # logger.warning(f"__getattribute__: {name}")
+        attrs_to_return_directly=[
+            "__class__", "_properties","_scenarios_parameters",
+            "name", "description","base_type","_simulator",
+            "_status", "component_type", "_history",
+            "_scenarios_parameters"
+        ]
+        if name == "_history":
+            local_name =  self.name
+            local_status = self._status
+            local_simulator = self._simulator
+            return local_simulator.get_overall_status().get_component_history_as_dict(local_name, local_status.get_current_scenario_index_tuple())
+            # return object.__getattribute__(self, name)
+        elif name in attrs_to_return_directly:
+            return object.__getattribute__(self, name)
+        else:
+            # logger.error("ELSE")
+            local_properties = self._properties
+            # logger.info(local_properties)
+            if name in local_properties:
+                local_name =  self.name
+                local_status = self._status
+                local_simulator = self._simulator
+                return local_simulator.get_overall_status().get_value(local_name, name, local_status.get_current_scenario_index_tuple(), local_status.get_current_timestep())
+            else:
+                pass
+                #logger.error("Is not a property")
+        return object.__getattribute__(self, name)
+
+
+    def get_multi_scenario_history(self, prop_name):
+        """
+            Returns the history getting it from the multi scenario results object
+        """
+        local_history=[]
+        return self._simulator.get_overall_status().get_property_history_as_array(self.name, prop_name, self._status.get_current_scenario_index_tuple())
+
+    def get_multi_scenario_history_all_properties(self):
+        """
+            Returns the history getting it from the multi scenario results object
+        """
+        local_history=[]
+        return self._simulator.get_overall_status().get_component_history_as_dict(self.name, self._status.get_current_scenario_index_tuple())
 
     def replace_internal_value(self, name, value):
         """
@@ -187,6 +240,52 @@ class Component(object):
     def get_simulator(self):
         return self._simulator
 
+    def get_current_history_value(self, property_name, default_value=None):
+        """
+            Returns the property value identified by current timestep and current scenario tuple
+        """
+        comp_history = self._history
+        print(comp_history)
+        # input("get_current_history_value")
+        if property_name in comp_history:
+            prop_history = comp_history[property_name]
+            if len(prop_history) == 0:
+                if default_value is None:
+                    raise Exception(f"The property '{property_name}' has not any items!")
+                else:
+                    return default_value
+            else:
+                return prop_history[ len(prop_history) - 1 ]
+        else:
+            if default_value is None:
+                raise Exception(f"The property '{property_name}' is not defined!")
+            else:
+                return default_value
+
+
+    def get_previous_history_value(self, property_name, default_value=None):
+        """
+            if the value is found in history, is returned as previous value.
+            default otherwise
+        """
+        comp_history = self._history
+        print(comp_history)
+        # input("get_previous_history_value")
+        if property_name in comp_history:
+            prop_history = comp_history[property_name]
+            if len(prop_history) == 0:
+                if default_value is None:
+                    raise Exception(f"The property '{property_name}' has not any items!")
+                else:
+                    return default_value
+            else:
+                return prop_history[-1]
+        else:
+            if default_value is None:
+                raise Exception(f"The property '{property_name}' is not defined!")
+            else:
+                return default_value
+
     def get_history(self, attr_name=None):
         """
             Return a dictionary, keyed on timestep, with each value of the
@@ -207,8 +306,8 @@ class Component(object):
 
     def get_properties(self):
         """
-            Get all the properties for this component (as defined in
-            _properties)
+            Get all the properties for this component
+            (as defined in _properties)
         """
         properties = dict()
         for k in self._properties:
@@ -257,7 +356,20 @@ class Component(object):
 
 
     def get_current_property_value(self, property_name):
+        """
+            Returns the property value identified by current timestep and current scenario tuple
+        """
         if property_name not in self._properties:
             raise Exception("The property '%s' is not valid!", property_name)
 
         return self._status.get_property_current_value(property_name)
+
+
+    def get_status_repr(self):
+        """
+            Returns a representation of the full component
+        """
+        return repr(self._status)
+
+    def get_full_status(self):
+        return self._status.get_full_status()
