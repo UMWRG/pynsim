@@ -41,7 +41,6 @@ class ComponentStatus(object):
             "properties": properties
         }
         for property_name in self._status["properties"]:
-            # logger.info("self.init_property_object(%s)",property_name)
             self.init_property_object(property_name)
 
 
@@ -75,7 +74,6 @@ class ComponentStatus(object):
         """
             Set a property value using the current value
         """
-        # logger.error("component_status.set_property_value")
         self.init_property_object(name)
         self._status["properties"][name].set_value(value)
 
