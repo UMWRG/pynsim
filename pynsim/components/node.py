@@ -1,4 +1,4 @@
-from .component import Component
+from .component import Component, logging, logger
 
 class Node(Component):
     """
