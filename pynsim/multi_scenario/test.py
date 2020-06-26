@@ -60,9 +60,11 @@ class Reservoir(Node):
                    }
 
     _scenarios_parameters = {
-        '_target_release': 'target_release',
-        '_inflow':'inflow'
+        '_target_release':  'target_release',
+        '_inflow':          'inflow'
     }
+
+    _internal_status_fields = [ 'S', 'actual_release' ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs) # This allows to propagate the __init__
@@ -79,38 +81,13 @@ class Reservoir(Node):
 
 n1 = Reservoir(name="r1", x=10,y=20, simulator=simulation)
 
-# n1.add_scenario(type="node", name="r1.inflow",data=[10,11,13])
-n1._inflow = {0: 4,
-              1: 6,
-              2: 7,
-              3: 12,
-              4: 17,
-              5: 17,
-              6: 22,
-              7: 15,
-              8: 12,
-              9: 9,
-              10: 6,
-              11: 5,
-              }
+n1.S = 100
 
-n2 = Reservoir(name="r2", x=10,y=20, simulator=simulation)
-n2._inflow = [{0: 14,
-              1: 16,
-              2: 17,
-              3: 12,
-              4: 17,
-              5: 17,
-              6: 22,
-              7: 15,
-              8: 12,
-              9: 9,
-              10: 6,
-              11: 5,
-              },
-              {0: 4,
-                1: 6,
-                2: 7,
+# n1.add_scenario(type="node", name="r1.inflow",data=[10,11,13])
+n1._inflow = {
+                0: 11,
+                1: 22,
+                2: 33,
                 3: 12,
                 4: 17,
                 5: 17,
@@ -120,8 +97,43 @@ n2._inflow = [{0: 14,
                 9: 9,
                 10: 6,
                 11: 5,
+              }
+
+n2 = Reservoir(name="r2", x=10,y=20, simulator=simulation)
+n2.max_stor = 1e8
+n2.S = 300
+n2._inflow = [
+                {
+                    0: 14,
+                    1: 16,
+                    2: 17,
+                    3: 12,
+                    4: 17,
+                    5: 17,
+                    6: 22,
+                    7: 15,
+                    8: 12,
+                    9: 9,
+                    10: 6,
+                    11: 5,
+                },
+                {
+                    0: 4,
+                    1: 6,
+                    2: 7,
+                    3: 12,
+                    4: 17,
+                    5: 17,
+                    6: 22,
+                    7: 15,
+                    8: 12,
+                    9: 9,
+                    10: 6,
+                    11: 5,
                 }
-                ]
+            ]
+
+n2.actual_release = 50
 
 n3 = Reservoir(name="r3", x=10,y=20, simulator=simulation)
 
@@ -153,9 +165,34 @@ n3._inflow = [1,2,3,4]
 #     pass
 
 sm = simulation.get_scenario_manager()
+# for x in sm.get_scenarios_iterator("full"):
+#      logger.info(x)
+#      pass
+#
+# for x in sm.get_scenarios_iterator("simple"):
+#      logger.info(x)
+#      #logger.info(sm.get_current_component_property_data("Reservoir","r3","_inflow"))
+#      pass
+logger.error("FULL")
 for x in sm.get_scenarios_iterator("full"):
      logger.info(x)
-     pass
+
+logger.error("TREE")
+for x in sm.get_scenarios_iterator("tree"):
+     logger.info(x)
+     #logger.info(sm.get_current_component_property_data("Reservoir","r3","_inflow"))
+     logger.info(x["data"]["Reservoir"]["r3"]["properties"]["_inflow"]["data"])
+
+logger.error("TREE")
+for x in sm.get_scenarios_iterator("tree"):
+     logger.info("Full data %s", x)
+     for node_type in x["data"]:
+         logger.info("node_type %s", node_type)
+         for node_name in x["data"][node_type]:
+             logger.info("node_name %s", node_name)
+         # restore the status of every node
+         #node.object_reference.restore_status(x["tuple"])
+
 
 
 """
