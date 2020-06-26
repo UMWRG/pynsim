@@ -20,3 +20,7 @@ class ReservoirSystem(Network):
     _properties = {'timestep': 86400,
                    'tol': 0.1,
                    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs) # This allows to propagate the __init__
+        # List of fields that will be managed through the scenario manager
