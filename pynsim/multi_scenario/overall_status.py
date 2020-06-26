@@ -45,13 +45,10 @@ class OverallStatus(object):
 
             self.status[component_name][property_name][scenario_index][timestep_value] = property_value
 
-        #input("OVERALL")
-
     def get_value(self, component_name, property_name, scenario_index, timestep_value):
         # logger.warning(f"{component_name}-{property_name}-{scenario_index}-{timestep_value}")
         return_value=None
-        # if property_name == "init_stor":
-        #     input("Ci siamo")
+
         if component_name  not in self.status:
             return_value = None
         elif property_name  not in self.status[component_name]:
@@ -74,9 +71,6 @@ class OverallStatus(object):
             else:
                 return_value = self.status[component_name][property_name][scenario_index][timestep_value]
 
-        # logger.warning(f"Return value: {return_value}")
-        # if property_name == "init_stor":
-        #     input("LEGGI")
         return return_value
 
 
@@ -84,9 +78,9 @@ class OverallStatus(object):
         """
             Returns the full history of a tuple (component, property, scenario_index)
         """
-        if self.last_shown_history_json != json.dumps(self.status):
-            self.last_shown_history_json = json.dumps(self.status)
-            print(self.status)
+        # if self.last_shown_history_json != json.dumps(self.status):
+        #     self.last_shown_history_json = json.dumps(self.status)
+        #     print(self.status)
             # input("^^^^^^^^ Current Full History ^^^^^^^^^^^^")
 
 
@@ -123,11 +117,8 @@ class OverallStatus(object):
         return_array = []
         history_dict = self.get_property_history(component_name, property_name, scenario_index)
 
-        print(f"self.get_property_history('{component_name}', '{property_name}', '{scenario_index}')")
-        print(history_dict)
-        # print(self.timesteps)
-        #if property_name == "S":
-            # input("^^^^^^^^^ get_property_history_as_array ^^^^^^^^^")
+        # print(f"self.get_property_history('{component_name}', '{property_name}', '{scenario_index}')")
+        # print(history_dict)
 
         if isinstance(history_dict, dict) or isinstance(history_dict, list):
             for item in history_dict:
