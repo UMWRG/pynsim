@@ -45,8 +45,8 @@ class SimpleRouting(Engine):
             print(self.target.nodes[res]._history)
             if "S" not in self.target.nodes[res]._history or \
                 len(self.target.nodes[res]._history['S']) == 0:
-                # init_stor[res] = self.target.nodes[res].init_stor
-                init_stor[res] = self.target.nodes[res].get_current_history_value("init_stor")
+                init_stor[res] = self.target.nodes[res].init_stor
+                # init_stor[res] = self.target.nodes[res].get_current_history_value("init_stor")
 
                 print(f"1 - init_stor {res} {init_stor[res]}")
             else:
@@ -107,38 +107,11 @@ class SimpleRouting(Engine):
     def update_mass_balance(self, nodes, init_stor):
         "Calculate the mass balance for all nodes"
         for res in nodes:
-            # print("update_mass_balance")
-            # print(f"1 - res {res}")
-            # print(f"2 - init_stor[res]: {init_stor[res]}")
-            # print(f"3 - self.target.nodes[res].inflow: {self.target.nodes[res].inflow}")
-            # print(f"4 - self.target.timestep: {self.target.timestep}")
-            # print(f"5 - self.target.nodes[res].actual_release: {self.target.nodes[res].actual_release}")
-            #
-            # for i in nodes:
-            #     print(f"6 - i {i}")
-            #     print(f"7 - self.target.nodes[i].actual_release {self.target.nodes[i].actual_release}")
-            #     print(f"8 - self.target.connectivity[i, res] {self.target.connectivity[i, res]}")
-            #
-            #
-            # print(init_stor[res])
-            # print(self.target.nodes[res].inflow)
-            # print(self.target.timestep)
-
             sum_total = sum([self.target.nodes[i].actual_release
                            * self.target.connectivity[i, res]
                            for i in nodes])
 
-            # print(f"9 - sum_total: {sum_total}")
-            # print(f"10 - time_Step: {self.target.timestep}")
-            # print(f"11 - init_stor[res] {init_stor[res]}")
-            #
-            # print(f"12 - self.target.nodes[res].inflow * self.target.timestep {self.target.nodes[res].inflow * self.target.timestep}")
-            # print(f"13 - self.target.nodes[res].actual_release * self.target.timestep {self.target.nodes[res].actual_release * self.target.timestep}")
-            # print(f"14 - self.target.nodes[res].get_current_history_value('init_stor') {self.target.nodes[res].get_current_history_value('init_stor')}")
-            # print(f"15 - self.target.nodes[res].get_previous_history_value('S',self.target.nodes[res].get_current_history_value('init_stor')) {self.target.nodes[res].get_previous_history_value('S',self.target.nodes[res].get_current_history_value('init_stor'))}")
-            # input("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
             try:
-                # self.target.nodes[res].S = self.target.nodes[res].get_previous_history_value("S", self.target.nodes[res].get_current_history_value("init_stor")) \
                 self.target.nodes[res].S = init_stor[res] \
                     + self.target.nodes[res].inflow * self.target.timestep \
                     - self.target.nodes[res].actual_release * self.target.timestep\
