@@ -170,7 +170,7 @@ class Simulator(object):
             self.initialise()
 
 
-        self.show_registered_components()
+        # self.show_registered_components()
 
         """
             Iteration over the timesteps
@@ -204,7 +204,7 @@ class Simulator(object):
                 logging.warning("| scenario_item_tuple %s", scenario_item_tuple)
                 logging.warning("+================================================================")
 
-                logging.warning(scenario_item_data)
+                # logging.warning(scenario_item_data)
 
                 """
                     Setting the current index tuple for the current scenario for every component
