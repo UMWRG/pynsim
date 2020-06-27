@@ -22,6 +22,7 @@ from datetime import datetime
 import os
 from copy import deepcopy
 import re
+import importlib
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -33,81 +34,152 @@ class Utilities:
     def __init__(self):
         pass
 
+    def create_components(self, simulation, simulation_components, data_file_name, classes_array):
+        """
+            Create components getting data from a json file
+        """
+        with open(data_file_name) as json_file:
+            data = json.load(json_file)
+            if "nodes" not in data:
+                raise Exception("No nodes in the file")
+            elif "links" not in data:
+                raise Exception("No links in the file")
+            else:
+                nodes_list = data["nodes"]
+                for comp_data in nodes_list:
+                    comp_name = comp_data["name"]
+                    comp_type = comp_data["type"]
+                    if comp_name in simulation_components:
+                        raise Exception(f"Component '{comp_name}' already defined!")
+                    else:
+                        if comp_data["type"] == "Reservoir":
+                            if "Reservoir" not in classes_array:
+                                raise Exception(f"The class '{comp_type}' is not defined!")
+                            class_found = classes_array[comp_type]
+
+                            new_node = class_found(simulator=simulation, x=comp_data["x"], y=comp_data["y"], name=comp_data["name"])
+                            simulation_components[comp_name] = new_node
+                            simulation.network.add_node(new_node)
+                        else:
+                            raise Exception(f"Component type '{comp_type}' not valid!")
+
+                links_list = data["links"]
+                for comp_data in links_list:
+                    comp_name = comp_data["name"]
+                    comp_type = comp_data["type"]
+                    if comp_name in simulation_components:
+                        raise Exception(f"Component '{comp_name}' already defined!")
+                    else:
+                        if comp_data["type"] == "River":
+                            if "River" not in classes_array:
+                                raise Exception(f"The class '{comp_type}' is not defined!")
+                            class_found = classes_array[comp_type]
+
+                            new_link = class_found(
+                                simulator=simulation,
+                                start_node=simulation_components[comp_data["start_node"]],
+                                end_node=simulation_components[comp_data["end_node"]],
+                                name=comp_data["name"]
+                            )
+                            simulation_components[comp_name] = new_link
+                            simulation.network.add_link(new_link)
+                        else:
+                            raise Exception(f"Component type '{comp_type}' not valid!")
+
+
     def update_components_from_file(self,simulation_components, data_file_name):
         """
             Passing an array of components, it setups them using data in file_path
         """
         with open(data_file_name) as json_file:
             data = json.load(json_file)
-            for comp_name in data:
-                if comp_name in simulation_components:
-                    props_evaluated={}
-                    cno=0
-                    while True:
-                        cno=cno+1
-                        # print("----------------------------------------------------------")
-                        # print(f"Start Cycle number {cno}")
-                        # print("----------------------------------------------------------")
-                        # input("")
-                        props_to_evaluate={}
-                        for prop_name in data[comp_name]:
-                            # Copy the props to evaluate
-                            if prop_name not in props_evaluated:
-                                props_to_evaluate[prop_name]=deepcopy(data[comp_name][prop_name])
+            if "nodes" not in data:
+                raise Exception("No nodes in the file")
+            elif "links" not in data:
+                raise Exception("No links in the file")
+            else:
+                nodes_list = data["nodes"]
+                for comp_data in nodes_list:
+                    self.update_single_component(simulation_components, comp_data)
+                links_list = data["links"]
+                for comp_data in links_list:
+                    self.update_single_component(simulation_components, comp_data)
 
-                        if len(props_to_evaluate) == 0:
-                            # Finished full props evaluation
-                            break
+    def update_single_component(self, simulation_components, comp_data):
+        """
+            Updates a single component
+        """
+        if "properties" in comp_data:
+            comp_name = comp_data["name"]
+            if comp_name in simulation_components:
+                props_evaluated={}
+                cno=0
+                while True:
+                    cno=cno+1
+                    # print("----------------------------------------------------------")
+                    # print(f"Start Cycle number {cno}")
+                    # print("----------------------------------------------------------")
+                    # input("")
+                    props_to_evaluate={}
+                    print(comp_data)
+                    for prop_name in comp_data["properties"]:
+                        # Copy the props to evaluate
+                        if prop_name not in props_evaluated:
+                            props_to_evaluate[prop_name]=deepcopy(comp_data["properties"][prop_name])
 
-                        for prop_name in props_to_evaluate:
-                            # print("Property name: %s", prop_name)
-                            val = props_to_evaluate[prop_name]
-                            # print("Property value: %s", val)
+                    if len(props_to_evaluate) == 0:
+                        # Finished full props evaluation
+                        break
 
-                            m = re.search('\{\{([^}]*)\}\}', str(val))
+                    for prop_name in props_to_evaluate:
+                        # print("Property name: %s", prop_name)
+                        val = props_to_evaluate[prop_name]
+                        # print("Property value: %s", val)
 
-                            property_fully_evaluated = True
-                            new_expression=[]
+                        m = re.search('\{\{([^}]*)\}\}', str(val))
 
-                            if m is not None:
-                                # The property contains an expression. Trying to evaluate it
-                                # print(m.group(1))
-                                expression = m.group(1).strip()
-                                # print(expression)
-                                new_built_expression=expression
+                        property_fully_evaluated = True
+                        new_expression=[]
 
-                                last_position = 0
-                                for m in re.finditer(r"(self\.([a-zA-Z_.]+))", expression):
-                                    # print( '%02d-%02d: %s : %s' % (m.start(), m.end(), m.group(1), m.group(2)))
-                                    depending_var_name = m.group(2)
+                        if m is not None:
+                            # The property contains an expression. Trying to evaluate it
+                            # print(m.group(1))
+                            expression = m.group(1).strip()
+                            # print(expression)
+                            new_built_expression=expression
 
-                                    if depending_var_name not in props_evaluated:
-                                        property_fully_evaluated = False
-                                        break
+                            last_position = 0
+                            for m in re.finditer(r"(self\.([a-zA-Z_.]+))", expression):
+                                # print( '%02d-%02d: %s : %s' % (m.start(), m.end(), m.group(1), m.group(2)))
+                                depending_var_name = m.group(2)
 
-                                    prefix=""
-                                    postfix=""
-                                    if m.start() > 0:
-                                        prefix = expression[last_position:m.start()-1]
+                                if depending_var_name not in props_evaluated:
+                                    property_fully_evaluated = False
+                                    break
 
-                                    last_position = m.end() + 1
+                                prefix=""
+                                postfix=""
+                                if m.start() > 0:
+                                    prefix = expression[last_position:m.start()-1]
 
-                                    new_expression.append(prefix)
-                                    new_expression.append(props_evaluated[depending_var_name])
+                                last_position = m.end() + 1
 
-                                if m.end() < len(expression) - 1 and property_fully_evaluated is True:
-                                    new_expression.append(expression[m.end()+1:])
+                                new_expression.append(prefix)
+                                new_expression.append(props_evaluated[depending_var_name])
 
-                                if property_fully_evaluated is True:
-                                    full_expression = " ".join((str(x) for x in new_expression))
-                                    val = eval(full_expression)
-
+                            if m.end() < len(expression) - 1 and property_fully_evaluated is True:
+                                new_expression.append(expression[m.end()+1:])
 
                             if property_fully_evaluated is True:
-                                # print("Evaluate")
-                                # print(f"{prop_name} = {val}")
-                                setattr(simulation_components[comp_name], prop_name, val)
-                                props_evaluated[prop_name] = val
-                            # else:
-                            #     print("NOT Evaluate")
-                            # print("==================")
+                                full_expression = " ".join((str(x) for x in new_expression))
+                                val = eval(full_expression)
+
+
+                        if property_fully_evaluated is True:
+                            # print("Evaluate")
+                            # print(f"{prop_name} = {val}")
+                            setattr(simulation_components[comp_name], prop_name, val)
+                            props_evaluated[prop_name] = val
+                        # else:
+                        #     print("NOT Evaluate")
+                        # print("==================")
