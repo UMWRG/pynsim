@@ -69,47 +69,57 @@ network.tol = 0.1  # Tolerance value for mass balance error
 
 simulation.network = network
 
+
+utils = Utilities()
 # Nodes
-simulation_components["R1"] = Reservoir(simulator=simulation, x=0, y=2, name='R1')
-network.add_node(simulation_components["R1"])
-
-simulation_components["R2"] = Reservoir(simulator=simulation, x=0, y=1, name='R2')
-network.add_node(simulation_components["R2"])
-
-simulation_components["R3"] = Reservoir(simulator=simulation, x=2, y=1, name='R3')
-network.add_node(simulation_components["R3"])
-
-simulation_components["R4"] = Reservoir(simulator=simulation, x=1, y=0, name='R4')
-network.add_node(simulation_components["R4"])
+utils.create_components(
+    simulation,
+    simulation_components,
+    data_file_name, {
+        "Reservoir":Reservoir,
+        "River": River
+    }
+)
+# simulation_components["R1"] = Reservoir(simulator=simulation, x=0, y=2, name='R1')
+# network.add_node(simulation_components["R1"])
+#
+# simulation_components["R2"] = Reservoir(simulator=simulation, x=0, y=1, name='R2')
+# network.add_node(simulation_components["R2"])
+#
+# simulation_components["R3"] = Reservoir(simulator=simulation, x=2, y=1, name='R3')
+# network.add_node(simulation_components["R3"])
+#
+# simulation_components["R4"] = Reservoir(simulator=simulation, x=1, y=0, name='R4')
+# network.add_node(simulation_components["R4"])
 
 # Links
-simulation_components["L1"] = River(
-    simulator=simulation,
-    start_node=simulation_components["R1"],
-    end_node=simulation_components["R2"],
-    name='R1_R2'
-)
-network.add_link(simulation_components["L1"])
-
-simulation_components["L2"] = River(
-    simulator=simulation,
-    start_node=simulation_components["R2"],
-    end_node=simulation_components["R4"],
-    name='R2_R4'
-)
-network.add_link(simulation_components["L2"])
-
-simulation_components["L3"] = River(
-    simulator=simulation,
-    start_node=simulation_components["R3"],
-    end_node=simulation_components["R4"],
-    name='R3_R4'
-)
-network.add_link(simulation_components["L3"])
+# simulation_components["L1"] = River(
+#     simulator=simulation,
+#     start_node=simulation_components["R1"],
+#     end_node=simulation_components["R2"],
+#     name='R1_R2'
+# )
+# network.add_link(simulation_components["L1"])
+#
+# simulation_components["L2"] = River(
+#     simulator=simulation,
+#     start_node=simulation_components["R2"],
+#     end_node=simulation_components["R4"],
+#     name='R2_R4'
+# )
+# network.add_link(simulation_components["L2"])
+#
+# simulation_components["L3"] = River(
+#     simulator=simulation,
+#     start_node=simulation_components["R3"],
+#     end_node=simulation_components["R4"],
+#     name='R3_R4'
+# )
+# network.add_link(simulation_components["L3"])
 
 # Node data
 # data_file_name="./input/use-case-1.json"
-utils = Utilities()
+
 utils.update_components_from_file(simulation_components,data_file_name)
 
 
