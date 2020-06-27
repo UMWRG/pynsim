@@ -50,8 +50,8 @@ class SimpleRouting(Engine):
 
                 # print(f"1 - init_stor {res} {init_stor[res]}")
             else:
-                # init_stor[res] = self.target.nodes[res]._history['S'][-1]
-                init_stor[res] = self.target.nodes[res].get_previous_history_value("S")
+                init_stor[res] = self.target.nodes[res]._history['S'][-1]
+                # init_stor[res] = self.target.nodes[res].get_previous_history_value("S")
                 # print(f"2 - init_stor {res} {init_stor[res]}")
 
         # print(init_stor)
@@ -107,9 +107,9 @@ class SimpleRouting(Engine):
     def update_mass_balance(self, nodes, init_stor):
         "Calculate the mass balance for all nodes"
         for res in nodes:
-            sum_total = sum([self.target.nodes[i].actual_release
-                           * self.target.connectivity[i, res]
-                           for i in nodes])
+            # sum_total = sum([self.target.nodes[i].actual_release
+            #                * self.target.connectivity[i, res]
+            #                for i in nodes])
 
             try:
                 self.target.nodes[res].S = init_stor[res] \
@@ -121,4 +121,4 @@ class SimpleRouting(Engine):
 
             except Exception:
                 print(self.target.nodes[res]._simulator.overall_status.dump())
-                raise Exception("stop")
+                raise Exception("update_mass_balance Error^^^^^^^^^^^^^^")
