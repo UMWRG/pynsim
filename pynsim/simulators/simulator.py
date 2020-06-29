@@ -412,112 +412,34 @@ class Simulator(object):
             institution.reset_history()
 
 
-    def dump_components_status(self):
-        import os
-
-        full_status={}
-
-        now = datetime.now()
-        date_time = now.strftime("%Y-%m-%d.%H-%M-%S")
-
-        folder_name=f"./logs/{date_time}"
-
-        os.makedirs(folder_name)
-
-        for comp in self.components_registered_list:
-            file = open(f"{folder_name}/status-component-{comp.name}.txt", "w")
-
-            logger.info(comp.get_full_status())
-
-            logger.info(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
-
-            file.write(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
-
-            full_status[comp.name] = comp.get_full_status()
-            file.close
-
-        file = open(f"{folder_name}/status-all-components.txt", "w")
-
-        file.write(json.dumps(full_status, default=lambda o: o.__dict__, indent=2, sort_keys=True))
-        file.close
-
-
-    def export_history_multi(self, property_names=[], export_file_prefix=None):
-        """
-            New export with multiscenario data/results
-        """
-        if export_file_prefix is None:
-            raise Exception("The filename prefix is mandatory")
-        try:
-            import pandas as pd
-
-            # export_data = pd.DataFrame(index=self.timesteps)
-
-            multi_history = {}
-            history = {}
-            scenarios_manager = self.get_scenario_manager()
-            for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
-                scenario_item_data  = scenario_item["data"]
-                scenario_item_index = scenario_item["index"]
-                scenario_item_tuple = scenario_item["tuple"]
-                history[scenario_item_tuple] = {}
-                for ts in self.timesteps:
-                    history[scenario_item_tuple][ts] = {}
-                    for comp in self.components_registered_list:
-                        history[scenario_item_tuple][ts][comp.name]={}
-                        comp.set_current_scenario_index_tuple(scenario_item_tuple)
-                        comp.set_current_timestep(ts)
-                        for prop in comp.get_properties():
-                            if prop in property_names:
-                                history[scenario_item_tuple][ts][comp.name][prop]=comp.get_current_property_value(prop)
-                                key = f"{comp.name}-{prop}"
-                                if not key in multi_history:
-                                    multi_history[key] = {}
-
-                                multi_history[key][ts] = comp.get_current_property_value(prop)
-
-
-
-            logger.warning("self.timesteps %r", self.timesteps)
-
-            import os
-            path=os.path.dirname(os.path.abspath(__file__))
-            path = path.replace(" ", "\ ")
-            file = open(f"./logs/history.txt", "w")
-            file.write(json.dumps(history, indent=4, sort_keys=True))
-            file.close
-
-            for tuple in history:
-                data_for_scenario = history[tuple]
-
-                export_data = pd.DataFrame(index=self.timesteps)
-
-                for ts in data_for_scenario:
-                    data_for_ts = data_for_scenario[ts]
-                    for comp_name in data_for_ts:
-                        comp_props = data_for_ts[comp_name]
-                        for prop in comp_props:
-                            key = f"{comp_name}-{prop}"
-                            export_data['%s %s' % (comp_name, prop)] = multi_history[key]
-
-                export_data = pd.DataFrame(data = multi_history)
-
-                if len(export_data.columns) == 0:
-                    logging.warn("No components found with property %s"
-                                 % property_names)
-                    return
-                else:
-                    export_data.to_csv(f"{export_file_prefix}-{tuple}.txt")
-
-
-
-        except ValueError:
-            logging.critical("Unable to export export %s to csv. Only simple types (numbers, strings) can be"
-                               "exported to CSV.", property_names)
-
-        except ImportError:
-            logging.critical("Cannot export history. Please ensure pandas is"
-                             "installed." % property_names)
+    # def dump_components_status(self):
+    #     import os
+    #
+    #     full_status={}
+    #
+    #     now = datetime.now()
+    #     date_time = now.strftime("%Y-%m-%d.%H-%M-%S")
+    #
+    #     folder_name=f"./logs/{date_time}"
+    #
+    #     os.makedirs(folder_name)
+    #
+    #     for comp in self.components_registered_list:
+    #         file = open(f"{folder_name}/status-component-{comp.name}.txt", "w")
+    #
+    #         # logger.info(comp.get_full_status())
+    #
+    #         # logger.info(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
+    #
+    #         # file.write(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
+    #
+    #         # full_status[comp.name] = comp.get_full_status()
+    #         file.close
+    #
+    #     file = open(f"{folder_name}/status-all-components.txt", "w")
+    #
+    #     file.write(json.dumps(full_status, default=lambda o: o.__dict__, indent=2, sort_keys=True))
+    #     file.close
 
     def export_history(self, property_name, export_file):
         """
