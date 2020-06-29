@@ -135,15 +135,24 @@ class Component(object):
             "_scenarios_parameters"
         ]
         if name == "_history":
+            """
+                The history has to come from the overall history manager
+            """
             local_name =  self.name
             local_status = self._status
             local_simulator = self._simulator
             return local_simulator.get_overall_status().get_component_history_as_dict(local_name, local_status.get_current_scenario_index_tuple())
         elif name in attrs_to_return_directly:
+            """
+                This items has to be returned as they are
+            """
             return object.__getattribute__(self, name)
         else:
             local_properties = self._properties
             if name in local_properties:
+                """
+                    The values have to come from the history managaer
+                """
                 local_name =  self.name
                 local_status = self._status
                 local_simulator = self._simulator
