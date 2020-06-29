@@ -45,6 +45,8 @@ import json
 import re
 
 import sys
+utils = Utilities()
+
 
 if len(sys.argv) < 2:
     raise Exception("You must pass the input file name!")
@@ -59,7 +61,9 @@ simulation_components = {}
 # Simulation
 simulation = Simulator()
 
-timesteps = range(12)
+
+timesteps = utils.get_time_steps(data_file_name)
+
 simulation.set_timesteps(timesteps)
 
 # Network
@@ -69,57 +73,17 @@ network.tol = 0.1  # Tolerance value for mass balance error
 
 simulation.network = network
 
-
-utils = Utilities()
-# Nodes
+# Creates all components
 utils.create_components(
     simulation,
     simulation_components,
     data_file_name, {
-        "Reservoir":Reservoir,
-        "River": River
+        "nodes": [Reservoir],
+        "links": [River]
     }
 )
-# simulation_components["R1"] = Reservoir(simulator=simulation, x=0, y=2, name='R1')
-# network.add_node(simulation_components["R1"])
-#
-# simulation_components["R2"] = Reservoir(simulator=simulation, x=0, y=1, name='R2')
-# network.add_node(simulation_components["R2"])
-#
-# simulation_components["R3"] = Reservoir(simulator=simulation, x=2, y=1, name='R3')
-# network.add_node(simulation_components["R3"])
-#
-# simulation_components["R4"] = Reservoir(simulator=simulation, x=1, y=0, name='R4')
-# network.add_node(simulation_components["R4"])
 
-# Links
-# simulation_components["L1"] = River(
-#     simulator=simulation,
-#     start_node=simulation_components["R1"],
-#     end_node=simulation_components["R2"],
-#     name='R1_R2'
-# )
-# network.add_link(simulation_components["L1"])
-#
-# simulation_components["L2"] = River(
-#     simulator=simulation,
-#     start_node=simulation_components["R2"],
-#     end_node=simulation_components["R4"],
-#     name='R2_R4'
-# )
-# network.add_link(simulation_components["L2"])
-#
-# simulation_components["L3"] = River(
-#     simulator=simulation,
-#     start_node=simulation_components["R3"],
-#     end_node=simulation_components["R4"],
-#     name='R3_R4'
-# )
-# network.add_link(simulation_components["L3"])
-
-# Node data
-# data_file_name="./input/use-case-1.json"
-
+# Updates components properties reading the file
 utils.update_components_from_file(simulation_components,data_file_name)
 
 
@@ -130,55 +94,21 @@ simulation.start()
 
 props = ['S', 'actual_release', 'min_stor', 'max_stor', 'init_stor', 'target_release', 'inflow']
 
-# simulation.dump_components_status()
-
-simulation.export_history_multi(props,"./logs/simple-routing")
+# simulation.export_history_multi(props,"./logs/simple-routing")
 
 # Plot results
 import seaborn
 import matplotlib.pyplot as plt
 
-# new_figure = plt.figure(1)
-# for i, node in enumerate(simulation.network.nodes):
-#     plt.subplot(2, 4, i + 1)
-#     plt.plot([timesteps[0], timesteps[-1]], [node.min_stor, node.min_stor], 'r')
-#     plt.plot([timesteps[0], timesteps[-1]], [node.max_stor, node.max_stor], 'r')
-#     plt.plot(node._history['S'], 'b')
-#     plt.ylim([0, node.max_stor])
-#     plt.xlim([timesteps[0], timesteps[-1]])
-#     plt.title('R%s storage' % (i + 1))
-#     plt.subplot(2, 4, i + 5)
-#     plt.plot(node._history['target_release'], 'r')
-#     plt.plot(node._history['actual_release'], 'b')
-#     plt.ylim(ymin=0)
-#     plt.xlim([timesteps[0], timesteps[-1]])
-#     plt.title('R%s release' % (i + 1))
-#     if i == 0:
-#         plt.legend(['Target release', 'Actual release'])
-#
-# plt.show()
-# print("START")
-
-# scenarios_manager = self.get_scenario_manager()
+figure_counter=1
 for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("full"):
     scenario_item_data  = scenario_item["data"]
     scenario_item_index = scenario_item["index"]
     scenario_item_tuple = scenario_item["tuple"]
-    # print(scenario_item)
-    # print(scenario_item_index)
-    # print(scenario_item_tuple)
+
     local_history={}
-    plt.figure(1)
+    plt.figure(figure_counter)
     for i, node in enumerate(simulation.network.nodes):
-        # print("=================================================")
-        # print("Name %s", node.name)
-        # print(node.get_full_status())
-        # for prop in node.get_full_status()["properties"]:
-        #     print("--------------------------------------------")
-        #     print(f"     Prop: {prop['name']}")
-        #     print(prop["status"])
-        #     print("--------------------------------------------")
-        # print("=================================================")
 
         node.set_current_scenario_index_tuple(scenario_item_tuple)
 
@@ -186,11 +116,8 @@ for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("f
         local_history["target_release"] = node.get_multi_scenario_history("target_release")
         local_history["actual_release"] = node.get_multi_scenario_history("actual_release")
         local_history["inflow"] = node.get_multi_scenario_history("inflow")
-        # print(local_history)
 
         local_history_dict= node.get_multi_scenario_history_all_properties()
-        # print(local_history_dict)
-        # input("hisotry ^^^^^")
 
         plt.subplot(2, 4, i + 1)
         plt.plot([timesteps[0], timesteps[-1]], [node.min_stor, node.min_stor], 'r')
@@ -208,4 +135,5 @@ for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("f
         if i == 0:
             plt.legend(['Target release', 'Actual release'])
 
-    plt.show()
+    figure_counter = figure_counter +1
+plt.show()
