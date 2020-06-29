@@ -181,11 +181,6 @@ class MultiDimensionalData(object):
 
         flag_update_index_done = False
 
-        # logger.info("CURRENT VALUE")
-        # for index, index_value in enumerate(self._indexes):
-        #     logger.info("index: %s, index_value: %s", index, index_value)
-        #     logger.info("Object data %s", self._objects_list[index].get_current_indexed_data())
-
         for main_list_index, obj  in reversed(list(enumerate(self._objects_list))):
 
             datum_length=obj.data_length()
