@@ -192,10 +192,6 @@ class Component(object):
     def set_current_timestep(self, timestep):
         self._status.set_current_timestep(timestep)
 
-    def add_scenario(self, name, value):
-        logger.error("self.__class__.__name__ %s", self.__class__.__name__)
-        logger.error("self.__name__ %s", self.name)
-
     @classmethod
     def get_class_name(cls):
         """
