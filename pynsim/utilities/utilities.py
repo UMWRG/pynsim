@@ -34,6 +34,24 @@ class Utilities:
     def __init__(self):
         pass
 
+    def get_time_steps(self, data_file_name ):
+        with open(data_file_name) as json_file:
+            data = json.load(json_file)
+            if "timestepper" not in data:
+                raise Exception("No timestepper in the file")
+            else:
+                if "range" in data["timestepper"]:
+                    min=0
+                    max=0
+                    if "min" in data["timestepper"]["range"]:
+                        min = data["timestepper"]["range"]["min"]
+                    if "max" in data["timestepper"]["range"]:
+                        max = data["timestepper"]["range"]["max"]
+                    return range(min,max)
+                else:
+                    raise Exception("No known timestepper in the file!")
+
+
     def create_components(self, simulation, simulation_components, data_file_name, classes_array):
         """
             Create components getting data from a json file
@@ -45,6 +63,7 @@ class Utilities:
             elif "links" not in data:
                 raise Exception("No links in the file")
             else:
+                # Looks Nodes to instance
                 nodes_list = data["nodes"]
                 for comp_data in nodes_list:
                     comp_name = comp_data["name"]
@@ -52,17 +71,18 @@ class Utilities:
                     if comp_name in simulation_components:
                         raise Exception(f"Component '{comp_name}' already defined!")
                     else:
-                        if comp_data["type"] == "Reservoir":
-                            if "Reservoir" not in classes_array:
-                                raise Exception(f"The class '{comp_type}' is not defined!")
-                            class_found = classes_array[comp_type]
+                        # input(list( map( lambda x: x.get_class_name(), classes_array["nodes"])))
+                        for class_in_array in classes_array["nodes"]:
+                            if comp_data["type"] == class_in_array.get_class_name():
 
-                            new_node = class_found(simulator=simulation, x=comp_data["x"], y=comp_data["y"], name=comp_data["name"])
-                            simulation_components[comp_name] = new_node
-                            simulation.network.add_node(new_node)
+                                new_node = class_in_array(simulator=simulation, x=comp_data["x"], y=comp_data["y"], name=comp_data["name"])
+                                simulation_components[comp_name] = new_node
+                                simulation.network.add_node(new_node)
+                                break
                         else:
                             raise Exception(f"Component type '{comp_type}' not valid!")
 
+                # Looks Links to instance
                 links_list = data["links"]
                 for comp_data in links_list:
                     comp_name = comp_data["name"]
@@ -70,19 +90,18 @@ class Utilities:
                     if comp_name in simulation_components:
                         raise Exception(f"Component '{comp_name}' already defined!")
                     else:
-                        if comp_data["type"] == "River":
-                            if "River" not in classes_array:
-                                raise Exception(f"The class '{comp_type}' is not defined!")
-                            class_found = classes_array[comp_type]
+                        for class_in_array in classes_array["links"]:
+                            if comp_data["type"] == class_in_array.get_class_name():
 
-                            new_link = class_found(
-                                simulator=simulation,
-                                start_node=simulation_components[comp_data["start_node"]],
-                                end_node=simulation_components[comp_data["end_node"]],
-                                name=comp_data["name"]
-                            )
-                            simulation_components[comp_name] = new_link
-                            simulation.network.add_link(new_link)
+                                new_link = class_in_array(
+                                    simulator=simulation,
+                                    start_node=simulation_components[comp_data["start_node"]],
+                                    end_node=simulation_components[comp_data["end_node"]],
+                                    name=comp_data["name"]
+                                )
+                                simulation_components[comp_name] = new_link
+                                simulation.network.add_link(new_link)
+                                break
                         else:
                             raise Exception(f"Component type '{comp_type}' not valid!")
 
