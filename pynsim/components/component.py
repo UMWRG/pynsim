@@ -47,7 +47,7 @@ class Component(object):
     # This dict contains both the current scenarios properties names
     # and the status properties names
     _properties = dict()
-    _history = dict()
+    #_history = dict()
     # To avoid exporting the history of every property, property names can
     # be specified here to explictly define which properties are results
     # (and are therefore to be exported).
@@ -66,16 +66,8 @@ class Component(object):
     # _internal_status_fields = dict()
 
     def __init__(self, name, simulator=None, **kwargs):
-        # logger.info(f"Component class {self.__class__.__name__}")
-        # logger.info(f"Name class {name.__class__.__name__}")
-
         # Reference to the simulator
         self._simulator = None
-        for k, v in kwargs.items():
-            logger.warning("k: %s, v: %s", k, v)
-            input("Wait")
-
-        # logger.info(f"Simulator class {simulator.__class__.__name__}")
 
         self.bind_simulator(simulator) # To properly bind the simulator!
 
@@ -84,16 +76,12 @@ class Component(object):
             raise Exception("The 'name' of a pynsim component is mandatory and unique inside the same components set!")
 
         self.name = name
-        self._history = dict()
+        # self._history = dict()
 
-        self._status = ComponentStatus(component_ref = self, properties = deepcopy(self._properties))
+        self._status = ComponentStatus(component_ref = self)
 
         for k, v in self._properties.items():
-            # logger.warning("1) k: %s, v: %s", k, v)
-
             setattr(self, k, deepcopy(v))
-
-            self._history[k] = []
 
         for k, v in kwargs.items():
             """
@@ -109,10 +97,6 @@ class Component(object):
             else:
                 raise Exception("Invalid property %s. Allowed properties are: %s" % (k, self._properties.keys()))
 
-            # This sets the current status for the property
-            # if k in self._internal_status_fields:
-            #     self._status.set_property_start_value(k, v)
-
 
     def __setattr__(self, name, value):
         if name is not "_simulator" and self._simulator is None:
@@ -123,14 +107,9 @@ class Component(object):
             pass
         else:
             if name in self._properties:
-                # logger.warning("This is a property: %s", name)
-
                 """
                     If the property is valid for status
                 """
-
-                self._status.set_property_value(name, value)
-
                 self._simulator.get_overall_status().set_value(self.name, name, self._status.get_current_scenario_index_tuple(), self._status.get_current_timestep(), value)
 
             elif name in self._scenarios_parameters:
@@ -208,8 +187,12 @@ class Component(object):
         logger.error("self.__class__.__name__ %s", self.__class__.__name__)
         logger.error("self.__name__ %s", self.name)
 
-    def get_class_name(self):
-        return self.__class__.__name__
+    @classmethod
+    def get_class_name(cls):
+        """
+            Return the class name.
+        """
+        return cls.__name__
 
     def get_object_name(self):
         return self.name
@@ -343,21 +326,8 @@ class Component(object):
 
 
 
-    def get_current_property_value(self, property_name):
-        """
-            Returns the property value identified by current timestep and current scenario tuple
-        """
-        if property_name not in self._properties:
-            raise Exception("The property '%s' is not valid!", property_name)
-
-        return self._status.get_property_current_value(property_name)
-
-
     def get_status_repr(self):
         """
             Returns a representation of the full component
         """
         return repr(self._status)
-
-    def get_full_status(self):
-        return self._status.get_full_status()
