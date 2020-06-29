@@ -34,18 +34,6 @@ class Reservoir(Node):
         '_inflow':          'inflow'
     }
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs) # This allows to propagate the __init__
-        # List of fields that will be managed through the scenario manager
-
     def setup(self, t):
-
-        # input("Setup Node {}: _target_release: {}".format(self.name, self._target_release[t]))
-        # input("Setup Node {}: _inflow: {}".format(self.name, self._inflow[t]))
-
-        # print(self.name)
-        # print(self._target_release)
-
-
         self.target_release = self._target_release[str(t)]
         self.inflow = self._inflow[str(t)]
