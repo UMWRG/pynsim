@@ -78,11 +78,6 @@ class OverallStatus(object):
         """
             Returns the full history of a tuple (component, property, scenario_index)
         """
-        # if self.last_shown_history_json != json.dumps(self.status):
-        #     self.last_shown_history_json = json.dumps(self.status)
-        #     print(self.status)
-            # input("^^^^^^^^ Current Full History ^^^^^^^^^^^^")
-
 
         if component_name  not in self.status:
             return_value = None
@@ -116,9 +111,6 @@ class OverallStatus(object):
         """
         return_array = []
         history_dict = self.get_property_history(component_name, property_name, scenario_index)
-
-        # print(f"self.get_property_history('{component_name}', '{property_name}', '{scenario_index}')")
-        # print(history_dict)
 
         if isinstance(history_dict, dict) or isinstance(history_dict, list):
             for item in history_dict:
