@@ -41,21 +41,12 @@ class SimpleRouting(Engine):
         # Set initial storage for this simulation time step
         init_stor = dict()
         for res in node_types['Reservoir']:
-            # print("self.target.nodes[res]._history")
-            # print(self.target.nodes[res]._history)
             if "S" not in self.target.nodes[res]._history or \
                 len(self.target.nodes[res]._history['S']) == 0:
                 init_stor[res] = self.target.nodes[res].init_stor
-                # init_stor[res] = self.target.nodes[res].get_current_history_value("init_stor")
-
-                # print(f"1 - init_stor {res} {init_stor[res]}")
             else:
                 init_stor[res] = self.target.nodes[res]._history['S'][-1]
-                # init_stor[res] = self.target.nodes[res].get_previous_history_value("S")
-                # print(f"2 - init_stor {res} {init_stor[res]}")
 
-        # print(init_stor)
-        # input("init_stor")
         # Iteratively calclate releases and storages
 
         # First calculation of the mass balance:
@@ -107,10 +98,6 @@ class SimpleRouting(Engine):
     def update_mass_balance(self, nodes, init_stor):
         "Calculate the mass balance for all nodes"
         for res in nodes:
-            # sum_total = sum([self.target.nodes[i].actual_release
-            #                * self.target.connectivity[i, res]
-            #                for i in nodes])
-
             try:
                 self.target.nodes[res].S = init_stor[res] \
                     + self.target.nodes[res].inflow * self.target.timestep \
