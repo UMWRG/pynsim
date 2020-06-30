@@ -32,8 +32,7 @@ Written by Philipp Meier <philipp.meier@eawag.ch>
 (c) 2014 Eawag: Swiss Federal Institute of Aquatic Science and Technology
 """
 
-from pynsim import Simulator
-from pynsim import Utilities
+from pynsim import Simulator, Utilities
 
 from agents.nodes import Reservoir
 from agents.links import River
@@ -47,7 +46,6 @@ import re
 import sys
 utils = Utilities()
 
-
 if len(sys.argv) < 2:
     raise Exception("You must pass the input file name!")
 
@@ -55,12 +53,10 @@ data_file_name = sys.argv[1]
 if not path.exists(data_file_name):
     raise Exception(f"The file '{data_file_name}' does not exists!")
 
-
 simulation_components = {}
 
 # Simulation
 simulation = Simulator()
-
 
 timesteps = utils.get_time_steps(data_file_name)
 
@@ -86,7 +82,6 @@ utils.create_components(
 # Updates components properties reading the file
 utils.update_components_from_file(simulation_components,data_file_name)
 
-
 engine = SimpleRouting(network)
 simulation.add_engine(engine)
 
@@ -100,13 +95,19 @@ import matplotlib.pyplot as plt
 
 figure_counter=1
 for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("full"):
-    scenario_item_tuple = scenario_item["tuple"]
+    """
+        Iterating all the scenarios
+    """
+    scenario_id = scenario_item["tuple"]
 
     plt.figure(figure_counter)
     for i, node in enumerate(simulation.network.nodes):
 
-        node.set_current_scenario_index_tuple(scenario_item_tuple)
+        node.set_current_scenario_id(scenario_id)
 
+        """
+            Getting the history for the component
+        """
         local_history_dict= node.get_multi_scenario_history_all_properties(properties_allowed=props)
 
         plt.subplot(2, 4, i + 1)
