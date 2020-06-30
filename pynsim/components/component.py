@@ -170,12 +170,12 @@ class Component(object):
         local_history=[]
         return self._simulator.get_overall_status().get_property_history_as_array(self.name, prop_name, self._status.get_current_scenario_index_tuple())
 
-    def get_multi_scenario_history_all_properties(self):
+    def get_multi_scenario_history_all_properties(self, properties_allowed=None):
         """
             Returns the history getting it from the multi scenario results object
         """
         local_history=[]
-        return self._simulator.get_overall_status().get_component_history_as_dict(self.name, self._status.get_current_scenario_index_tuple())
+        return self._simulator.get_overall_status().get_component_history_as_dict(self.name, self._status.get_current_scenario_index_tuple(), properties_allowed=properties_allowed)
 
     def replace_internal_value(self, name, value):
         """
