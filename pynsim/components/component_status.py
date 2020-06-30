@@ -14,10 +14,10 @@ class ComponentStatus(object):
     """
         This class models the status of an object, indexed by:
             - property_name
-            - scenario_tuple
+            - scenario_id
             - timestep
 
-        [property_name][scenario_tuple][timestep]
+        [property_name][scenario_id][timestep]
 
     """
 
@@ -46,7 +46,7 @@ class ComponentStatus(object):
         """
         self._status["current_timestep"] = current_timestep
 
-    def get_current_scenario_index_tuple(self):
+    def get_current_scenario_id(self):
         """
             Gets current scenario tuple
         """
@@ -58,7 +58,7 @@ class ComponentStatus(object):
         """
         return self._status["current_timestep"]
 
-    def set_current_scenario_index_tuple(self, current_multiscenario_index_tuple):
+    def set_current_scenario_id(self, current_multiscenario_index_tuple):
         """
             Sets current scenario tuple and array starting from tuple
         """
