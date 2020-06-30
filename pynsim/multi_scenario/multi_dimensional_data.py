@@ -164,7 +164,7 @@ class MultiDimensionalData(object):
             else:
                 current_data.append(item_data)
 
-        index_tuple = self.get_current_index_tuple()
+        index_tuple = self.get_current_scenario_id()
 
         if increment_index is True:
             self._increment_index()
@@ -204,7 +204,7 @@ class MultiDimensionalData(object):
             # The index inside every object is updated
             self._objects_list[index].set_current_index(index_value)
 
-    def get_current_index_tuple(self):
+    def get_current_scenario_id(self):
         """
             Returns the current index as a tuple in order to be used as index of a dict, if available, StopIteration otherwise
         """
