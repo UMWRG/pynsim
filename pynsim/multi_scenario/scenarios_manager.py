@@ -56,11 +56,11 @@ class ScenariosManager(object):
         """
         return self._multi_id.get_current_index()
 
-    def get_current_index_tuple(self):
+    def get_current_scenario_id(self):
         """
             Returns the current index of the multidimensional data manager as a tuple without affecting the index
         """
-        return self._multi_id.get_current_index_tuple()
+        return self._multi_id.get_current_scenario_id()
 
 
     def get_current_data(self):
