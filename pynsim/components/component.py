@@ -56,7 +56,7 @@ class Component(object):
     # List of fields that will be managed through the scenario manager.
     # They are set at class level.
     # These are the parameter set for providing the full scenarios
-    _scenarios_parameters = dict()
+    _scenario_parameters = dict()
 
     # List of fields that does not vary through the simulation
     # _invariant_parameters = dict()
@@ -93,7 +93,7 @@ class Component(object):
             logger.warning("k: %s, v: %s", k, v)
             input("Wait")
 
-            if k == "_scenarios_parameters":
+            if k == "_scenario_parameters":
                 setattr(self, k, v)
             elif k in self._properties:
                 setattr(self, k, v)
@@ -111,8 +111,8 @@ class Component(object):
         if name is not "_simulator" and self._simulator is None:
             raise Exception("The current Component does not have any simulator assigned!")
 
-        if name == "_scenarios_parameters":
-            # logger.info("Setting _scenarios_parameters")
+        if name == "_scenario_parameters":
+            # logger.info("Setting _scenario_parameters")
             pass
         else:
             if name in self._properties:
@@ -121,7 +121,7 @@ class Component(object):
                 """
                 self._simulator.get_overall_status().set_value(self.name, name, self._status.get_current_scenario_id(), self._status.get_current_timestep(), value)
 
-            elif name in self._scenarios_parameters:
+            elif name in self._scenario_parameters:
                 self._simulator.get_scenario_manager().add_scenario(
                     object_type=self.__class__.__name__,
                     object_name = self.name,
@@ -145,10 +145,10 @@ class Component(object):
             - Otherwise the returned value is the one of the object attribute
         """
         attrs_to_return_directly=[
-            "__class__", "_properties","_scenarios_parameters",
+            "__class__", "_properties","_scenario_parameters",
             "name", "description","base_type","_simulator",
             "_status", "component_type", "_history",
-            "_scenarios_parameters"
+            "_scenario_parameters"
         ]
         if name == "_history":
             """
@@ -282,15 +282,17 @@ class Component(object):
             else:
                 return default_value
 
-    def get_history(self, attr_name=None):
+    def get_history(self, attr_name=None, properties_allowed=None):
         """
             Return a dictionary, keyed on timestep, with each value of the
             attribute at that timestep.
         """
-        if attr_name is None:
-            return self._history
-        else:
+        if attr_name is not None:
             return self._history.get(attr_name, None)
+        else:
+            return self._simulator.get_overall_status().get_component_history_as_dict(self.name, self._status.get_current_scenario_id(), properties_allowed=properties_allowed)
+
+
 
     def reset_history(self):
         """
