@@ -28,7 +28,7 @@ class ComponentStatus(object):
             # This represents the current index of the scenario.
             # This is necessary to select the current item
             "current_multiscenario_index": {
-                "tuple": None,
+                "scenario_id": None,
                 "array": None
             },
 
@@ -48,9 +48,9 @@ class ComponentStatus(object):
 
     def get_current_scenario_id(self):
         """
-            Gets current scenario tuple
+            Gets current scenario id
         """
-        return self._status["current_multiscenario_index"]["tuple"]
+        return self._status["current_multiscenario_index"]["scenario_id"]
 
     def get_current_timestep(self):
         """
@@ -58,16 +58,16 @@ class ComponentStatus(object):
         """
         return self._status["current_timestep"]
 
-    def set_current_scenario_id(self, current_multiscenario_index_tuple):
+    def set_current_scenario_id(self, current_scenario_id):
         """
-            Sets current scenario tuple and array starting from tuple
+            Sets current scenario scenario_id and array starting from tuple
         """
-        self._status["current_multiscenario_index"]["tuple"] = current_multiscenario_index_tuple
-        self._status["current_multiscenario_index"]["array"] = current_multiscenario_index_tuple.split(",")
+        self._status["current_multiscenario_index"]["scenario_id"] = current_scenario_id
+        self._status["current_multiscenario_index"]["array"] = current_scenario_id.split(",")
 
     def set_current_scenario_index_array(self, current_multiscenario_index_array):
         """
-            Sets current scenario tuple and array starting from array
+            Sets current scenario scenario_id and array starting from array
         """
         self._status["current_multiscenario_index"]["array"] = current_multiscenario_index_array
-        self._status["current_multiscenario_index"]["tuple"] = ",".join(current_multiscenario_index_array)
+        self._status["current_multiscenario_index"]["scenario_id"] = ",".join(current_multiscenario_index_array)
