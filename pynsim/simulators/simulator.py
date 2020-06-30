@@ -199,9 +199,9 @@ class Simulator(object):
                 """
                 scenario_item_data  = scenario_item["data"]
                 scenario_item_index = scenario_item["index"]
-                scenario_item_tuple = scenario_item["tuple"]
+                scenario_id = scenario_item["tuple"]
                 logging.warning("+================================================================")
-                logging.warning("| scenario_item_tuple %s", scenario_item_tuple)
+                logging.warning("| scenario_id %s", scenario_id)
                 logging.warning("+================================================================")
 
                 # logging.warning(scenario_item_data)
@@ -210,7 +210,7 @@ class Simulator(object):
                     Setting the current index tuple for the current scenario for every component
                 """
                 for component_item in scenario_item_data:
-                    component_item["object_reference"].set_current_scenario_index_tuple(scenario_item_tuple)
+                    component_item["object_reference"].set_current_scenario_id(scenario_id)
                     # replacing the values from the multiscenario obj
                     component_item["object_reference"].replace_internal_value(component_item["property_name"],component_item["property_data"])
 
