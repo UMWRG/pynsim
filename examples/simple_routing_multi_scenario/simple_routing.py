@@ -98,7 +98,7 @@ for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("f
     """
         Iterating all the scenarios
     """
-    scenario_id = scenario_item["tuple"]
+    scenario_id = scenario_item["scenario_id"]
 
     plt.figure(figure_counter)
     for i, node in enumerate(simulation.network.nodes):
