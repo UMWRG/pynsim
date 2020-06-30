@@ -94,41 +94,31 @@ simulation.start()
 
 props = ['S', 'actual_release', 'min_stor', 'max_stor', 'init_stor', 'target_release', 'inflow']
 
-# simulation.export_history_multi(props,"./logs/simple-routing")
-
 # Plot results
 import seaborn
 import matplotlib.pyplot as plt
 
 figure_counter=1
 for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("full"):
-    scenario_item_data  = scenario_item["data"]
-    scenario_item_index = scenario_item["index"]
     scenario_item_tuple = scenario_item["tuple"]
 
-    local_history={}
     plt.figure(figure_counter)
     for i, node in enumerate(simulation.network.nodes):
 
         node.set_current_scenario_index_tuple(scenario_item_tuple)
 
-        local_history["S"] = node.get_multi_scenario_history("S")
-        local_history["target_release"] = node.get_multi_scenario_history("target_release")
-        local_history["actual_release"] = node.get_multi_scenario_history("actual_release")
-        local_history["inflow"] = node.get_multi_scenario_history("inflow")
-
-        local_history_dict= node.get_multi_scenario_history_all_properties()
+        local_history_dict= node.get_multi_scenario_history_all_properties(properties_allowed=props)
 
         plt.subplot(2, 4, i + 1)
         plt.plot([timesteps[0], timesteps[-1]], [node.min_stor, node.min_stor], 'r')
         plt.plot([timesteps[0], timesteps[-1]], [node.max_stor, node.max_stor], 'r')
-        plt.plot(local_history['S'], 'b')
+        plt.plot(local_history_dict['S'], 'b')
         plt.ylim([0, node.max_stor])
         plt.xlim([timesteps[0], timesteps[-1]])
         plt.title('R%s storage' % (i + 1))
         plt.subplot(2, 4, i + 5)
-        plt.plot(local_history['target_release'], 'r')
-        plt.plot(local_history['actual_release'], 'b')
+        plt.plot(local_history_dict['target_release'], 'r')
+        plt.plot(local_history_dict['actual_release'], 'b')
         plt.ylim(ymin=0)
         plt.xlim([timesteps[0], timesteps[-1]])
         plt.title('R%s release' % (i + 1))
