@@ -199,7 +199,7 @@ class Simulator(object):
                 """
                 scenario_item_data  = scenario_item["data"]
                 scenario_item_index = scenario_item["index"]
-                scenario_id = scenario_item["tuple"]
+                scenario_id = scenario_item["scenario_id"]
                 logging.warning("+================================================================")
                 logging.warning("| scenario_id %s", scenario_id)
                 logging.warning("+================================================================")
@@ -207,7 +207,7 @@ class Simulator(object):
                 # logging.warning(scenario_item_data)
 
                 """
-                    Setting the current index tuple for the current scenario for every component
+                    Setting the current index scenario_id for the current scenario for every component
                 """
                 for component_item in scenario_item_data:
                     component_item["object_reference"].set_current_scenario_id(scenario_id)
