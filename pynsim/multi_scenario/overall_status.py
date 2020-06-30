@@ -125,14 +125,15 @@ class OverallStatus(object):
 
         return return_array
 
-    def get_component_history_as_dict(self, component_name, scenario_index):
+    def get_component_history_as_dict(self, component_name, scenario_index, properties_allowed=None):
         """
             Returns the history of all properties of a component
         """
         return_dict = dict()
         if component_name in self.status:
             for property_name in self.status[component_name]:
-                return_dict[property_name] = self.get_property_history_as_array(component_name, property_name, scenario_index)
+                if properties_allowed is None or property_name in properties_allowed:
+                    return_dict[property_name] = self.get_property_history_as_array(component_name, property_name, scenario_index)
 
         return return_dict
 
