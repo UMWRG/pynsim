@@ -203,11 +203,11 @@ class Component(object):
         """
         return self._status
 
-    def set_current_scenario_id(self, current_multiscenario_index_tuple):
+    def set_current_scenario_id(self, current_scenario_id):
         """
             Sets the current scenario_id
         """
-        self._status.set_current_scenario_id(current_multiscenario_index_tuple)
+        self._status.set_current_scenario_id(current_scenario_id)
 
     def set_current_timestep(self, timestep):
         self._status.set_current_timestep(timestep)
@@ -238,7 +238,7 @@ class Component(object):
 
     def get_current_history_value(self, property_name, default_value=None):
         """
-            Returns the property value identified by current timestep and current scenario tuple
+            Returns the property value identified by current timestep and current scenario id
         """
         comp_history = self._history
         # print(comp_history)
