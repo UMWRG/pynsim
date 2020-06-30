@@ -29,7 +29,7 @@ class Reservoir(Node):
                    'inflow': None,
                    }
 
-    _scenarios_parameters = {
+    _scenario_parameters = {
         '_target_release':  'target_release',
         '_inflow':          'inflow'
     }
