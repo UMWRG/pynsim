@@ -66,6 +66,9 @@ class Component(object):
     # _internal_status_fields = dict()
 
     def __init__(self, name, simulator=None, **kwargs):
+        """
+            This method initialize the component
+        """
         # Reference to the simulator
         self._simulator = None
 
@@ -99,6 +102,12 @@ class Component(object):
 
 
     def __setattr__(self, name, value):
+        """
+            This method intercepts the calls to set every attribute of the class objects.
+            - If the attribute owns to "_properties" object, it sends the value to the "overall" object
+            - If the attribute owns to "_scenario_parameters" object, it sends the value to the "scenario_manager" object
+            In any case the value is also set as object attribute
+        """
         if name is not "_simulator" and self._simulator is None:
             raise Exception("The current Component does not have any simulator assigned!")
 
@@ -110,7 +119,7 @@ class Component(object):
                 """
                     If the property is valid for status
                 """
-                self._simulator.get_overall_status().set_value(self.name, name, self._status.get_current_scenario_index_tuple(), self._status.get_current_timestep(), value)
+                self._simulator.get_overall_status().set_value(self.name, name, self._status.get_current_scenario_id(), self._status.get_current_timestep(), value)
 
             elif name in self._scenarios_parameters:
                 self._simulator.get_scenario_manager().add_scenario(
@@ -128,6 +137,13 @@ class Component(object):
 
 
     def __getattribute__(self, name):
+        """
+            This method intercepts the calls to get every attribute value of the class objects.
+            - If the attribute is the "_history" array, the array is returned by the "overall_status" object
+            - If the attribute owns to "attrs_to_return_directly" array,  the value is returned as it is
+            - If the attribute owns to "_properties" object, it returns the current value of the component for the current timestep and scenario
+            - Otherwise the returned value is the one of the object attribute
+        """
         attrs_to_return_directly=[
             "__class__", "_properties","_scenarios_parameters",
             "name", "description","base_type","_simulator",
@@ -141,7 +157,7 @@ class Component(object):
             local_name =  self.name
             local_status = self._status
             local_simulator = self._simulator
-            return local_simulator.get_overall_status().get_component_history_as_dict(local_name, local_status.get_current_scenario_index_tuple())
+            return local_simulator.get_overall_status().get_component_history_as_dict(local_name, local_status.get_current_scenario_id())
         elif name in attrs_to_return_directly:
             """
                 This items has to be returned as they are
@@ -156,7 +172,7 @@ class Component(object):
                 local_name =  self.name
                 local_status = self._status
                 local_simulator = self._simulator
-                # return local_simulator.get_overall_status().get_value(local_name, name, local_status.get_current_scenario_index_tuple(), local_status.get_current_timestep())
+                # return local_simulator.get_overall_status().get_value(local_name, name, local_status.get_current_scenario_id(), local_status.get_current_timestep())
                 return self.get_current_history_value(name)
             else:
                 pass
@@ -167,15 +183,13 @@ class Component(object):
         """
             Returns the history getting it from the multi scenario results object
         """
-        local_history=[]
-        return self._simulator.get_overall_status().get_property_history_as_array(self.name, prop_name, self._status.get_current_scenario_index_tuple())
+        return self._simulator.get_overall_status().get_property_history_as_array(self.name, prop_name, self._status.get_current_scenario_id())
 
     def get_multi_scenario_history_all_properties(self, properties_allowed=None):
         """
             Returns the history getting it from the multi scenario results object
         """
-        local_history=[]
-        return self._simulator.get_overall_status().get_component_history_as_dict(self.name, self._status.get_current_scenario_index_tuple(), properties_allowed=properties_allowed)
+        return self._simulator.get_overall_status().get_component_history_as_dict(self.name, self._status.get_current_scenario_id(), properties_allowed=properties_allowed)
 
     def replace_internal_value(self, name, value):
         """
@@ -184,10 +198,16 @@ class Component(object):
         super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
 
     def get_status(self):
+        """
+            Returns the _status object
+        """
         return self._status
 
-    def set_current_scenario_index_tuple(self, current_multiscenario_index_tuple):
-        self._status.set_current_scenario_index_tuple(current_multiscenario_index_tuple)
+    def set_current_scenario_id(self, current_multiscenario_index_tuple):
+        """
+            Sets the current scenario_id
+        """
+        self._status.set_current_scenario_id(current_multiscenario_index_tuple)
 
     def set_current_timestep(self, timestep):
         self._status.set_current_timestep(timestep)
