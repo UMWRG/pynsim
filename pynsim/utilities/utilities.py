@@ -35,6 +35,9 @@ class Utilities:
         pass
 
     def get_time_steps(self, data_file_name ):
+        """
+            Gets the timesteps reading the file
+        """
         with open(data_file_name) as json_file:
             data = json.load(json_file)
             if "timestepper" not in data:
@@ -132,15 +135,15 @@ class Utilities:
             comp_name = comp_data["name"]
             if comp_name in simulation_components:
                 props_evaluated={}
-                cno=0
+                # cno=0
                 while True:
-                    cno=cno+1
+                    # cno=cno+1
                     # print("----------------------------------------------------------")
                     # print(f"Start Cycle number {cno}")
                     # print("----------------------------------------------------------")
                     # input("")
                     props_to_evaluate={}
-                    print(comp_data)
+                    # print(comp_data)
                     for prop_name in comp_data["properties"]:
                         # Copy the props to evaluate
                         if prop_name not in props_evaluated:
