@@ -108,7 +108,7 @@ for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("f
         """
             Getting the history for the component
         """
-        local_history_dict= node.get_multi_scenario_history_all_properties(properties_allowed=props)
+        local_history_dict= node.get_history(properties_allowed=props)
 
         plt.subplot(2, 4, i + 1)
         plt.plot([timesteps[0], timesteps[-1]], [node.min_stor, node.min_stor], 'r')
