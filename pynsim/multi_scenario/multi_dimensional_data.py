@@ -164,12 +164,12 @@ class MultiDimensionalData(object):
             else:
                 current_data.append(item_data)
 
-        index_tuple = self.get_current_scenario_id()
+        scenario_id = self.get_current_scenario_id()
 
         if increment_index is True:
             self._increment_index()
 
-        return {"data": current_data, "index": data_index, "tuple": index_tuple}
+        return {"data": current_data, "index": data_index, "scenario_id": scenario_id}
 
 
     def _increment_index(self):
@@ -206,7 +206,7 @@ class MultiDimensionalData(object):
 
     def get_current_scenario_id(self):
         """
-            Returns the current index as a tuple in order to be used as index of a dict, if available, StopIteration otherwise
+            Returns the current scenario id as a tuple in order to be used as index of a dict, if available, StopIteration otherwise
         """
         if self._iteration_finished:
             raise StopIteration
