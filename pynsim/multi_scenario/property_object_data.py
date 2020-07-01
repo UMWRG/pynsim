@@ -72,6 +72,11 @@ class PropertyObjectData(object):
                 "property_data": self._structure.property_data[index],
                 "current_index": self._structure.current_index
             }
+        elif format=="id":
+            """
+                Returns just the scenario id
+            """
+            return self._structure.current_index
         else:
             raise Exception(f"The format {format} is not allowed!")
 
