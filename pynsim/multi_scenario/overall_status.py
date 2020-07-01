@@ -25,6 +25,8 @@ class OverallStatus(object):
 
         self.last_shown_history_json = ""
 
+        self.defined_scenarios_list = []
+
     def set_value(self, component_name, property_name, scenario_index, timestep_value, property_value):
         # logger.warning("OverallStatus.set_value: {} - {} - {} - {} - {}".format(component_name, property_name, scenario_index, timestep_value, property_value))
         if timestep_value is not None and timestep_value not in self.timesteps:
@@ -38,6 +40,10 @@ class OverallStatus(object):
         if scenario_index is None:
             self.status[component_name][property_name]["_default_"] = property_value
         else:
+            if scenario_index not in self.defined_scenarios_list:
+                self.defined_scenarios_list.append(scenario_index)
+
+
             if scenario_index not in self.status[component_name][property_name]:
                 self.status[component_name][property_name][scenario_index] = {}
             if timestep_value not in self.status[component_name][property_name][scenario_index]:
@@ -137,6 +143,17 @@ class OverallStatus(object):
 
         return return_dict
 
+    def get_scenarios_count(self):
+        """
+            Returns the length of the list of defined scenarios
+        """
+        return len(self.defined_scenarios_list)
+
+    def get_scenarios_list(self):
+        """
+            Returns the list of defined scenarios
+        """
+        return self.defined_scenarios_list
 
     def dump(self):
         return self.status
