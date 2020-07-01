@@ -83,6 +83,13 @@ class Component(object):
 
         self._status = ComponentStatus(component_ref = self)
 
+        """
+            IF:
+                True => the component raises an exception if scenario_id is found None in any operation
+                False => the component temporary allows scenario_id being None in any operation
+        """
+        self.current_scenario_id_mandatory_flag = False
+
         for k, v in self._properties.items():
             setattr(self, k, deepcopy(v))
 
@@ -157,6 +164,7 @@ class Component(object):
             local_name =  self.name
             local_status = self._status
             local_simulator = self._simulator
+
             return local_simulator.get_overall_status().get_component_history_as_dict(local_name, local_status.get_current_scenario_id())
         elif name in attrs_to_return_directly:
             """
@@ -178,6 +186,16 @@ class Component(object):
                 pass
         return object.__getattribute__(self, name)
 
+
+    def set_current_scenario_id_mandatory_flag(self):
+        """
+            To set a flag to eventually make mandatory the scenario_id settings
+            IF:
+                True => the component raises an exception if scenario_id is found None in any operation
+                False => the component temporary allows scenario_id being None in any operation
+        """
+        self.current_scenario_id_mandatory_flag = True
+        self._status.set_current_scenario_id_mandatory_flag()
 
     def get_multi_scenario_history(self, prop_name):
         """
@@ -208,6 +226,13 @@ class Component(object):
             Sets the current scenario_id
         """
         self._status.set_current_scenario_id(current_scenario_id)
+
+    def reset_current_scenario_id(self):
+        """
+            Resets the current scenario_id
+        """
+        self._status.reset_current_scenario_id()
+
 
     def set_current_timestep(self, timestep):
         self._status.set_current_timestep(timestep)
@@ -241,7 +266,6 @@ class Component(object):
             Returns the property value identified by current timestep and current scenario id
         """
         comp_history = self._history
-        # print(comp_history)
 
         if property_name in comp_history:
             prop_history = comp_history[property_name]
@@ -265,7 +289,6 @@ class Component(object):
             default otherwise
         """
         comp_history = self._history
-        # print(comp_history)
 
         if property_name in comp_history:
             prop_history = comp_history[property_name]
