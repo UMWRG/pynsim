@@ -48,6 +48,13 @@ class ScenariosManager(object):
         self._multi_id.set_output_format(format)
         return iter(self._multi_id)
 
+    def get_scenario_ids_iterator(self):
+        """
+            Returns an iterator containing ONLY scenario_id!
+        """
+        return self.get_scenarios_iterator(format="id")
+
+
     ################################################################
 
     def get_current_index(self):
