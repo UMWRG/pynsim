@@ -94,7 +94,7 @@ import seaborn
 import matplotlib.pyplot as plt
 
 figure_counter=1
-for scenario_item in simulation.get_scenario_manager().get_scenarios_iterator("full"):
+for scenario_item in simulation.get_scenarios_iterator("full"):
     """
         Iterating all the scenarios
     """
