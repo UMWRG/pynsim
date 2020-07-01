@@ -65,8 +65,9 @@ class MultiDimensionalData(object):
                 "simple" => returns the array of data
                 "full" => return the array of objects: { "name": "<name of column>", "reference": "<reference of column>", "data": <the data>}
                 "tree" => returns a tree organized by object_type.object_name.property_name
+                "id" => returns a list of scenarios id
         """
-        if format is not "simple" and format is not "full" and format is not "tree":
+        if format not in ["simple", "full", "tree", "id"]:
             raise Exception(f"The format {format} is not allowed!")
         self._output_format = format
 
@@ -132,44 +133,54 @@ class MultiDimensionalData(object):
                 False => The index is not modified at all
                 True  => The index is incremented
         """
-        data_index = self.get_current_index()
+        if self._output_format != "id":
+            """
+                In this case we need a structured return object
+            """
+            data_index = self.get_current_index()
 
-        if self._output_format == "tree":
-            current_data = {}
-        else:
-            current_data = []
-
-        for col_count, index in enumerate(data_index):
-
-            item_data = self._objects_list[col_count].get_data(index=index, format=self._output_format)
             if self._output_format == "tree":
-                """
-                    In this case the full data are returned as a tree
-                """
-                if not item_data["object_type"] in current_data:
-                    current_data[item_data["object_type"]] = {}
-                if not item_data["object_name"] in current_data[item_data["object_type"]]:
-                    current_data[item_data["object_type"]][item_data["object_name"]] = {
-                        "reference": item_data["object_reference"],
-                        "properties": {}
-                    }
-                if not item_data["property_name"] in current_data[item_data["object_type"]][item_data["object_name"]]["properties"]:
-                    current_data[item_data["object_type"]][item_data["object_name"]]["properties"][item_data["property_name"]] = {
-                        "data"      : item_data["property_data"],
-                        # "reference" : item_data["object_reference"],
-                        "current_index" : item_data["current_index"]
-                    }
-                else:
-                    raise Exception("Error")
+                current_data = {}
             else:
-                current_data.append(item_data)
+                current_data = []
+
+            for col_count, index in enumerate(data_index):
+
+                item_data = self._objects_list[col_count].get_data(index=index, format=self._output_format)
+                if self._output_format == "tree":
+                    """
+                        In this case the full data are returned as a tree
+                    """
+                    if not item_data["object_type"] in current_data:
+                        current_data[item_data["object_type"]] = {}
+                    if not item_data["object_name"] in current_data[item_data["object_type"]]:
+                        current_data[item_data["object_type"]][item_data["object_name"]] = {
+                            "reference": item_data["object_reference"],
+                            "properties": {}
+                        }
+                    if not item_data["property_name"] in current_data[item_data["object_type"]][item_data["object_name"]]["properties"]:
+                        current_data[item_data["object_type"]][item_data["object_name"]]["properties"][item_data["property_name"]] = {
+                            "data"      : item_data["property_data"],
+                            # "reference" : item_data["object_reference"],
+                            "current_index" : item_data["current_index"]
+                        }
+                    else:
+                        raise Exception("Error")
+                else:
+                    current_data.append(item_data)
 
         scenario_id = self.get_current_scenario_id()
 
         if increment_index is True:
             self._increment_index()
 
-        return {"data": current_data, "index": data_index, "scenario_id": scenario_id}
+        if self._output_format == "id":
+            """
+                Just returning the scenario_id
+            """
+            return scenario_id
+        else:
+            return {"data": current_data, "index": data_index, "scenario_id": scenario_id}
 
 
     def _increment_index(self):
