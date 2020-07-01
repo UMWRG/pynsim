@@ -34,6 +34,7 @@ class ComponentStatus(object):
 
             "current_timestep": None
         }
+        self.current_scenario_id_mandatory_flag = False
 
     def __repr__(self):
         return jsonpickle.encode({
@@ -46,10 +47,26 @@ class ComponentStatus(object):
         """
         self._status["current_timestep"] = current_timestep
 
+
+    def set_current_scenario_id_mandatory_flag(self):
+        """
+            To set a flag to eventually make mandatory the scenario_id settings
+            IF:
+                True => the component raises an exception if scenario_id is found None in any operation
+                False => the component temporary allows scenario_id being None in any operation
+        """
+        self.current_scenario_id_mandatory_flag = True
+
+
     def get_current_scenario_id(self):
         """
-            Gets current scenario id
+            Gets current scenario id.
+            Fails if the scenario id has not been set after the simulation finished and the data has to be returned
         """
+        if self.current_scenario_id_mandatory_flag is True and self._status["current_multiscenario_index"]["scenario_id"] is None:
+            # The simulation is finished and data is ready.
+            # Therefore setting scenario id is mandatory!
+            raise Exception("To get data from the component you must set the scenario ID!")
         return self._status["current_multiscenario_index"]["scenario_id"]
 
     def get_current_timestep(self):
@@ -64,6 +81,13 @@ class ComponentStatus(object):
         """
         self._status["current_multiscenario_index"]["scenario_id"] = current_scenario_id
         self._status["current_multiscenario_index"]["array"] = current_scenario_id.split(",")
+
+    def reset_current_scenario_id(self):
+        """
+            Resets the current scenario ID.
+        """
+        self._status["current_multiscenario_index"]["scenario_id"] = None
+        self._status["current_multiscenario_index"]["array"] = None
 
     def set_current_scenario_index_array(self, current_multiscenario_index_array):
         """
