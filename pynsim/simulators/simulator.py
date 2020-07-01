@@ -81,49 +81,70 @@ class Simulator(object):
     network = None
 
     def __init__(self, network=None, record_time=False, progress=False, max_iterations=1, save_components_history=True):
+        """
+            Simulator INIT method
+        """
         self.engines = []
-        #User defined timeseps
+        #User defined timesteps
         self.timesteps = []
         self.record_time = record_time
         if network is not None:
-            self.add_network(network)
+            self.network = network
 
         self.max_iterations = max_iterations
-        # Track the cumilative time of the setup functions for the network,
-        # nodes links and institutions. Also tracks the cumulative time of each
-        # engine run. This dict should show where a slow-down is occurring. For
-        # more details, the timings of each node, link & instution can be found
+        # Track the cumulative time of the setup functions for the network, nodes links and institutions.
+        # Also tracks the cumulative time of each engine run.
+        # This dict should show where a slow-down is occurring.
+        # For more details, the timings of each node, link & instution can be found
         # in the network.timing property.
         self.timing = {'network': 0, 'nodes': 0, 'links': 0, 'institutions': 0,
                        'engines': {}}
 
         self.progress = progress
+
+        # This is the current timestep of the simulation
         self.current_timestep = None
-
+        # This flag allows to decide if saving the component history or just having the last timestep iteraion data at the end of the simulation
         self._save_components_history = save_components_history
-
         # This is to manage all the scenarios
         self.scenarios_manager = ScenariosManager(save_components_history=save_components_history)
+        # This object manages the status of the full network
         self.overall_status = OverallStatus(save_components_history=save_components_history)
-
+        # List of the registered components
         self.components_registered_list = []
-
-
 
     def __repr__(self):
         my_engines = ",".join([m.name for m in self.engines])
         return "Simulator(engines=[%s])" % (my_engines)
 
     def get_save_components_history_flag(self):
+        """
+            Returns the flag value
+        """
         return self._save_components_history
 
     def get_scenario_manager(self):
+        """
+            Returns the "scenario manager" object
+        """
         return self.scenarios_manager
 
     def get_overall_status(self):
+        """
+            Returns the "overall status" object
+        """
         return self.overall_status
 
+    def get_defined_scenarios_count(self):
+        """
+            Returns the number of defined scenarios
+        """
+        return self.overall_status.get_scenarios_count()
+
     def initialise(self):
+        """
+            Init method
+        """
         logging.info("Initialising simulation")
 
         if self.network is None:
@@ -137,14 +158,31 @@ class Simulator(object):
             engine.initialise()
 
     def register_component(self, component_ref):
+        """
+            Method needed to register the component into the simulator
+        """
         self.components_registered_list.append(component_ref)
 
     def show_registered_components(self):
+        """
+            This method is implemented to show all the registered components to the simulator
+        """
         for comp in self.components_registered_list:
             logging.info("Component Class Name %s", comp.get_class_name())
             logging.info("Object Name %s", comp.get_object_name())
 
+
+    def get_scenarios_iterator(self, format="full"):
+        """
+            Shortcut to return the scenario manager iterator
+        """
+        return self.get_scenario_manager().get_scenarios_iterator(format)
+
+
     def start(self, initialise=True):
+        """
+            This method starts and run all the simulation until the end
+        """
         # Provide dummy function to simplify code below
         def tqdm(iterable, **kwargs):
             return iterable
@@ -169,9 +207,6 @@ class Simulator(object):
         if initialise is True:
             self.initialise()
 
-
-        # self.show_registered_components()
-
         """
             Iteration over the timesteps
         """
@@ -182,15 +217,19 @@ class Simulator(object):
             logging.error("Timestep %s", timestep)
             logging.error("==================================================================================")
 
+            # Setting the current timestep, used as reference
             self.current_timestep = timestep
-            # Setting the current timestep for each registered component
             for component_registered in self.components_registered_list:
+                """
+                    Setting the current timestep for each registered component.
+                    This is needed to properly manage the history
+                """
                 component_registered.set_current_timestep(timestep)
-                # logger.info(component_registered.name)
+
 
             self.network.set_timestep(timestep, idx)
             """
-                Iteration over the scenarios
+                Iteration over all the scenarios
             """
             scenarios_manager = self.get_scenario_manager()
             for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
@@ -198,22 +237,18 @@ class Simulator(object):
                     Gets current scenario data and index
                 """
                 scenario_item_data  = scenario_item["data"]
-                scenario_item_index = scenario_item["index"]
                 scenario_id = scenario_item["scenario_id"]
                 logging.warning("+================================================================")
                 logging.warning("| scenario_id %s", scenario_id)
                 logging.warning("+================================================================")
 
-                # logging.warning(scenario_item_data)
-
-                """
-                    Setting the current index scenario_id for the current scenario for every component
-                """
                 for component_item in scenario_item_data:
+                    """
+                        Setting the scenario_id, of the current scenario, for every component
+                    """
                     component_item["object_reference"].set_current_scenario_id(scenario_id)
                     # replacing the values from the multiscenario obj
                     component_item["object_reference"].replace_internal_value(component_item["property_name"],component_item["property_data"])
-
 
                 logging.debug("Setting up network")
                 t = time.time()
@@ -229,14 +264,14 @@ class Simulator(object):
                     self.timing['nodes']        += setup_timing['nodes']
 
                 logging.debug("Starting engines")
+
                 # Cycle through the engines up to the maximum number of iterations
                 # The context manager catches any `StopIteration` exceptions from the engines
                 # and terminates the context.
-                # input("Press Enter to continue...")
                 with EngineIterator(self, max_iterations=self.max_iterations) as manager:
                     for iteration, engine in manager:
                         logging.debug("Running engine %s", engine.name)
-                        # input(f"Engine: {engine.name}^^^^^^^^^^^^^")
+
                         if self.record_time:
                             t = time.time()
 
@@ -249,7 +284,6 @@ class Simulator(object):
                             self.timing['engines'][engine.name] += time.time() - t
 
                 self.network.post_process()
-                # input("Press Enter to continue...")
 
         for engine in self.engines:
             logging.debug("Teearing Down engine %s", engine.name)
@@ -258,7 +292,24 @@ class Simulator(object):
         logging.debug("Finished")
 
         logging.warning("Overall %r", self.overall_status.dump())
-        # input("OK")
+
+
+        if self.overall_status.get_scenarios_count() > 1:
+            # If the scenarios count is more than 1 the user needs to set the scenario id before getting any data
+            # Otherwise, 1 single scenario can be queried usign the last (and the only) scenario id
+            scenarios_manager = self.get_scenario_manager()
+            for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
+                scenario_item_data  = scenario_item["data"]
+                for component_item in scenario_item_data:
+                    """
+                        Setting the scenario_id, of the current scenario, for every component
+                    """
+                    component_item["object_reference"].reset_current_scenario_id()
+                    # This force the user to set the scenario id to query the data afterwards!
+                    component_item["object_reference"].set_current_scenario_id_mandatory_flag()
+
+        # input(self.overall_status.get_scenarios_count())
+
 
     def plot_timing(self):
         """
@@ -368,12 +419,6 @@ class Simulator(object):
                 Linking the network to the simulator
             """
             value.bind_simulator(self)
-
-
-
-    def add_network(self, network):
-        self.network = network
-
 
     def set_timesteps(self, timesteps, start_time=None, frequency=None,
                       periods=None, end_time=None):
