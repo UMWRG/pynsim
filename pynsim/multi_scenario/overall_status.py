@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 """
 class OverallStatus(object):
     def __init__(self, save_components_history=True):
+        """
+            Component Initialization
+        """
         self.status = {}
         self.timesteps = []
 
@@ -28,7 +31,10 @@ class OverallStatus(object):
         self.defined_scenarios_list = []
 
     def set_value(self, component_name, property_name, scenario_index, timestep_value, property_value):
-        # logger.warning("OverallStatus.set_value: {} - {} - {} - {} - {}".format(component_name, property_name, scenario_index, timestep_value, property_value))
+        """
+            Method used to set the value of the item identified by the tuple:
+            (component_name, property_name, scenario_index, timestep_value)
+        """
         if timestep_value is not None and timestep_value not in self.timesteps:
             self.timesteps.append(timestep_value)
         if scenario_index is None and timestep_value is None and property_value is None:
@@ -52,7 +58,10 @@ class OverallStatus(object):
             self.status[component_name][property_name][scenario_index][timestep_value] = property_value
 
     def get_value(self, component_name, property_name, scenario_index, timestep_value):
-        # logger.warning(f"{component_name}-{property_name}-{scenario_index}-{timestep_value}")
+        """
+            Method used to return_array the value of the item identified by the tuple:
+            (component_name, property_name, scenario_index, timestep_value)
+        """
         return_value=None
 
         if component_name  not in self.status:
@@ -113,7 +122,7 @@ class OverallStatus(object):
 
     def get_property_history_as_array(self, component_name, property_name, scenario_index):
         """
-            Returns the history of a property of a component
+            Returns the history of a property of a component as array
         """
         return_array = []
         history_dict = self.get_property_history(component_name, property_name, scenario_index)
@@ -133,7 +142,7 @@ class OverallStatus(object):
 
     def get_component_history_as_dict(self, component_name, scenario_index, properties_allowed=None):
         """
-            Returns the history of all properties of a component
+            Returns the history of all properties of a component as dict of arrays
         """
         return_dict = dict()
         if component_name in self.status:
@@ -156,4 +165,7 @@ class OverallStatus(object):
         return self.defined_scenarios_list
 
     def dump(self):
+        """
+            Return the full status
+        """
         return self.status
