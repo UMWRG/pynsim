@@ -97,8 +97,6 @@ class Component(object):
             """
                 Eventual properties set at definition time
             """
-            logger.warning("k: %s, v: %s", k, v)
-            input("Wait")
 
             if k == "_scenario_parameters":
                 setattr(self, k, v)
@@ -119,7 +117,6 @@ class Component(object):
             raise Exception("The current Component does not have any simulator assigned!")
 
         if name == "_scenario_parameters":
-            # logger.info("Setting _scenario_parameters")
             pass
         else:
             if name in self._properties:
@@ -235,6 +232,9 @@ class Component(object):
 
 
     def set_current_timestep(self, timestep):
+        """
+            Sets the current timestep for the component to be used as reference by set and get property values
+        """
         self._status.set_current_timestep(timestep)
 
     @classmethod
@@ -245,6 +245,9 @@ class Component(object):
         return cls.__name__
 
     def get_object_name(self):
+        """
+            Return the object name.
+        """
         return self.name
 
     def bind_simulator(self, simulator=None):
@@ -259,6 +262,9 @@ class Component(object):
                 raise Exception("The simulator reference cannot be None")
 
     def get_simulator(self):
+        """
+            Returns the simulator reference
+        """
         return self._simulator
 
     def get_current_history_value(self, property_name, default_value=None):
