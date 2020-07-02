@@ -308,7 +308,6 @@ class Simulator(object):
                     # This force the user to set the scenario id to query the data afterwards!
                     component_item["object_reference"].set_current_scenario_id_mandatory_flag()
 
-        # input(self.overall_status.get_scenarios_count())
 
 
     def plot_timing(self):
@@ -397,6 +396,9 @@ class Simulator(object):
         pass
 
     def add_engine(self, engine, depends_on=[]):
+        """
+            Adds an engine to the simulator
+        """
 
         if type(depends_on) != list:
             depends_on = [depends_on]
@@ -412,6 +414,9 @@ class Simulator(object):
 
 
     def __setattr__(self, name, value):
+        """
+            Used to operate on simulator attributes before the eventual settings
+        """
         super().__setattr__(name, value) # This allows to propagate the __setattr__ to the object itself
 
         if name == "network":
@@ -456,35 +461,6 @@ class Simulator(object):
         for institution in self.network.institutions:
             institution.reset_history()
 
-
-    # def dump_components_status(self):
-    #     import os
-    #
-    #     full_status={}
-    #
-    #     now = datetime.now()
-    #     date_time = now.strftime("%Y-%m-%d.%H-%M-%S")
-    #
-    #     folder_name=f"./logs/{date_time}"
-    #
-    #     os.makedirs(folder_name)
-    #
-    #     for comp in self.components_registered_list:
-    #         file = open(f"{folder_name}/status-component-{comp.name}.txt", "w")
-    #
-    #         # logger.info(comp.get_full_status())
-    #
-    #         # logger.info(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
-    #
-    #         # file.write(json.dumps(comp.get_full_status(), default=lambda o: o.__dict__, indent=2, sort_keys=True))
-    #
-    #         # full_status[comp.name] = comp.get_full_status()
-    #         file.close
-    #
-    #     file = open(f"{folder_name}/status-all-components.txt", "w")
-    #
-    #     file.write(json.dumps(full_status, default=lambda o: o.__dict__, indent=2, sort_keys=True))
-    #     file.close
 
     def export_history(self, property_name, export_file):
         """

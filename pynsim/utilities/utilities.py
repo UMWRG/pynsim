@@ -31,6 +31,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class Utilities:
+    """
+        This class is being used by the simulation clients to read data from json files and create the network components
+    """
     def __init__(self):
         pass
 
