@@ -74,7 +74,6 @@ class Utilities:
                     if comp_name in simulation_components:
                         raise Exception(f"Component '{comp_name}' already defined!")
                     else:
-                        # input(list( map( lambda x: x.get_class_name(), classes_array["nodes"])))
                         for class_in_array in classes_array["nodes"]:
                             if comp_data["type"] == class_in_array.get_class_name():
 
@@ -135,15 +134,9 @@ class Utilities:
             comp_name = comp_data["name"]
             if comp_name in simulation_components:
                 props_evaluated={}
-                # cno=0
                 while True:
-                    # cno=cno+1
-                    # print("----------------------------------------------------------")
-                    # print(f"Start Cycle number {cno}")
-                    # print("----------------------------------------------------------")
-                    # input("")
                     props_to_evaluate={}
-                    # print(comp_data)
+
                     for prop_name in comp_data["properties"]:
                         # Copy the props to evaluate
                         if prop_name not in props_evaluated:
@@ -154,9 +147,7 @@ class Utilities:
                         break
 
                     for prop_name in props_to_evaluate:
-                        # print("Property name: %s", prop_name)
                         val = props_to_evaluate[prop_name]
-                        # print("Property value: %s", val)
 
                         m = re.search('\{\{([^}]*)\}\}', str(val))
 
@@ -165,14 +156,11 @@ class Utilities:
 
                         if m is not None:
                             # The property contains an expression. Trying to evaluate it
-                            # print(m.group(1))
                             expression = m.group(1).strip()
-                            # print(expression)
                             new_built_expression=expression
 
                             last_position = 0
                             for m in re.finditer(r"(self\.([a-zA-Z_.]+))", expression):
-                                # print( '%02d-%02d: %s : %s' % (m.start(), m.end(), m.group(1), m.group(2)))
                                 depending_var_name = m.group(2)
 
                                 if depending_var_name not in props_evaluated:
@@ -198,10 +186,5 @@ class Utilities:
 
 
                         if property_fully_evaluated is True:
-                            # print("Evaluate")
-                            # print(f"{prop_name} = {val}")
                             setattr(simulation_components[comp_name], prop_name, val)
                             props_evaluated[prop_name] = val
-                        # else:
-                        #     print("NOT Evaluate")
-                        # print("==================")
