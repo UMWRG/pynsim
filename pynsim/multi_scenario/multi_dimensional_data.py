@@ -22,7 +22,9 @@ class MultiDimensionalData(object):
     """
 
     def __init__(self, save_components_history = True):
-        # logger.info("MultiDimensionalData INIT")
+        """
+            Initialization of the object
+        """
 
         self._objects_map = {} # Map of the indexes used for all the oject indexed ty the tuple (object type, object name, property name)
 
@@ -41,13 +43,13 @@ class MultiDimensionalData(object):
         """
             Init the iterator (if used with the iter function)
         """
-        # logger.info("MultiDimensionalData ITER")
+
         self._iterations_counter = 1
         self._iteration_finished = False
         for i, index in enumerate(self._indexes):
-            # logger.info(i)
+
             self._indexes[i] = 0
-        # logger.info(self._indexes)
+
         return self
 
     def __next__(self):
