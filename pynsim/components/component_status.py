@@ -52,7 +52,7 @@ class ComponentStatus(object):
         """
             To set a flag to eventually make mandatory the scenario_id settings
             IF:
-                True => the component raises an exception if scenario_id is found None in any operation
+                True => the component raises an exception if scenario_id is found being None in any operation
                 False => the component temporary allows scenario_id being None in any operation
         """
         self.current_scenario_id_mandatory_flag = True
