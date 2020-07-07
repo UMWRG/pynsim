@@ -39,7 +39,10 @@ from agents.links import River
 from agents.networks import ReservoirSystem
 
 from engines.routing import SimpleRouting
+from engines.show_status import ShowStatus
+
 from os import path
+
 import json
 import re
 
@@ -84,6 +87,11 @@ utils.update_components_from_file(simulation_components,data_file_name)
 
 engine = SimpleRouting(network)
 simulation.add_engine(engine)
+
+show_status = ShowStatus(network)
+
+simulation.set_loop_priority("timestep")
+simulation.add_engine(show_status)
 
 simulation.start()
 
