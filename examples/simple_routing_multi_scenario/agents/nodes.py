@@ -30,10 +30,22 @@ class Reservoir(Node):
                    }
 
     _scenario_parameters = {
+        '_min_stor':        'min_stor',
         '_target_release':  'target_release',
         '_inflow':          'inflow'
     }
 
     def setup(self, t):
-        self.target_release = self._target_release[str(t)]
-        self.inflow = self._inflow[str(t)]
+        # This property is timestep indexed
+        # self.target_release = self._target_release[str(t)]
+        # print(self._target_release[str(t)])
+        self.target_release = self.get_current_history_value("_target_release")
+        # This property is timestep indexed
+        # self.inflow = self._inflow[str(t)]
+        # print(self._inflow[str(t)])
+        self.inflow = self.get_current_history_value("_inflow")
+        # This property is constant over all timesteps
+        # self.min_stor = self._min_stor
+        # print(self._min_stor)
+        self.min_stor = self.get_current_history_value("_min_stor")
+        #input("check")
