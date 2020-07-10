@@ -108,7 +108,6 @@ class Simulator(object):
         # This is the current scenario id, set by the iterations
         self.current_scenario_id = None
 
-
         # This flag allows to decide if saving the component history or just having the last timestep iteraion data at the end of the simulation
         self._save_components_history = save_components_history
         # This is to manage all the scenarios
@@ -119,8 +118,6 @@ class Simulator(object):
         self.components_registered_list = []
         # Priority for the loops
         self.loop_priority = "timestep"
-
-        self.post_process_callbacks = { "timestep":[], "scenario": [] }
 
     def __repr__(self):
         my_engines = ",".join([m.name for m in self.engines])
@@ -196,9 +193,9 @@ class Simulator(object):
         for idx, timestep in tqdm(enumerate(self.timesteps),
                                   total=len(self.timesteps)):
 
-            logging.error("==================================================================================")
-            logging.error("Timestep %s", timestep)
-            logging.error("==================================================================================")
+            # logging.error("==================================================================================")
+            # logging.error("Timestep %s", timestep)
+            # logging.error("==================================================================================")
 
             # Setting the current timestep, used as reference
             self.current_timestep = timestep
@@ -224,9 +221,9 @@ class Simulator(object):
 
                 self.current_scenario_id = scenario_id
 
-                logging.warning("+================================================================")
-                logging.warning("| scenario_id %s", scenario_id)
-                logging.warning("+================================================================")
+                # logging.warning("+================================================================")
+                # logging.warning("| scenario_id %s", scenario_id)
+                # logging.warning("+================================================================")
 
                 self.run_single_simulation_step(
                     idx,
@@ -254,18 +251,18 @@ class Simulator(object):
 
             self.current_scenario_id = scenario_id
 
-            logging.warning("+================================================================")
-            logging.warning("| scenario_id %s", scenario_id)
-            logging.warning("+================================================================")
+            # logging.warning("+================================================================")
+            # logging.warning("| scenario_id %s", scenario_id)
+            # logging.warning("+================================================================")
             """
                 Iteration over the timesteps
             """
             for idx, timestep in tqdm(enumerate(self.timesteps),
                                       total=len(self.timesteps)):
 
-                logging.error("==================================================================================")
-                logging.error("Timestep %s", timestep)
-                logging.error("==================================================================================")
+                # logging.error("==================================================================================")
+                # logging.error("Timestep %s", timestep)
+                # logging.error("==================================================================================")
 
                 # Setting the current timestep, used as reference
                 self.current_timestep = timestep
@@ -334,8 +331,6 @@ class Simulator(object):
 
         self.network.post_process()
 
-    """=========================================="""
-
     def set_loop_priority(self, priority="timestep"):
         """
             Allows to setup which loop priority to use .
@@ -373,90 +368,15 @@ class Simulator(object):
         if initialise is True:
             self.initialise()
 
+        """
+            Iterating the engines with the chosen priority
+        """
         if self.loop_priority == "scenario":
             self.iterate_timesteps_for_scenario(tqdm)
         elif self.loop_priority == "timestep":
             self.iterate_scenarios_for_timestep(tqdm)
         else:
             raise Exception("You must select a valid value for the loop_priority: 'timestep', 'scenario'")
-
-        # """
-        #     Iteration over the timesteps
-        # """
-        # for idx, timestep in tqdm(enumerate(self.timesteps),
-        #                           total=len(self.timesteps)):
-        #
-        #     logging.error("==================================================================================")
-        #     logging.error("Timestep %s", timestep)
-        #     logging.error("==================================================================================")
-        #
-        #     # Setting the current timestep, used as reference
-        #     self.current_timestep = timestep
-        #     for component_registered in self.components_registered_list:
-        #         """
-        #             Setting the current timestep for each registered component.
-        #             This is needed to properly manage the history
-        #         """
-        #         component_registered.set_current_timestep(timestep)
-        #
-        #
-        #     self.network.set_timestep(timestep, idx)
-        #     """
-        #         Iteration over all the scenarios
-        #     """
-        #     scenarios_manager = self.get_scenario_manager()
-        #     for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
-        #         """
-        #             Gets current scenario data and index
-        #         """
-        #         scenario_item_data  = scenario_item["data"]
-        #         scenario_id = scenario_item["scenario_id"]
-        #         logging.warning("+================================================================")
-        #         logging.warning("| scenario_id %s", scenario_id)
-        #         logging.warning("+================================================================")
-        #
-        #         for component_item in scenario_item_data:
-        #             """
-        #                 Setting the scenario_id, of the current scenario, for every component
-        #             """
-        #             component_item["object_reference"].set_current_scenario_id(scenario_id)
-        #             # replacing the values from the multiscenario obj
-        #             component_item["object_reference"].replace_internal_value(component_item["property_name"],component_item["property_data"])
-        #
-        #         logging.debug("Setting up network")
-        #         t = time.time()
-        #         self.network.setup(timestep)
-        #         self.timing['network'] += time.time() - t
-        #
-        #         logging.debug("Setting up components")
-        #         setup_timing = self.network.setup_components(timestep, self.record_time)
-        #
-        #         if self.record_time:
-        #             self.timing['institutions'] += setup_timing['institutions']
-        #             self.timing['links']        += setup_timing['links']
-        #             self.timing['nodes']        += setup_timing['nodes']
-        #
-        #         logging.debug("Starting engines")
-        #
-        #         # Cycle through the engines up to the maximum number of iterations
-        #         # The context manager catches any `StopIteration` exceptions from the engines
-        #         # and terminates the context.
-        #         with EngineIterator(self, max_iterations=self.max_iterations) as manager:
-        #             for iteration, engine in manager:
-        #                 logging.debug("Running engine %s", engine.name)
-        #
-        #                 if self.record_time:
-        #                     t = time.time()
-        #
-        #                 engine.iteration = iteration
-        #                 engine.timestep = timestep
-        #                 engine.timestep_idx = idx
-        #                 engine.run()
-        #
-        #                 if self.record_time:
-        #                     self.timing['engines'][engine.name] += time.time() - t
-        #
-        #         self.network.post_process()
 
         for engine in self.engines:
             logging.debug("Teearing Down engine %s", engine.name)
@@ -466,10 +386,10 @@ class Simulator(object):
 
         logging.warning("Overall %r", self.overall_status.dump())
 
-
         if self.overall_status.get_scenarios_count() > 1:
             # If the scenarios count is more than 1 the user needs to set the scenario id before getting any data
-            # Otherwise, 1 single scenario can be queried usign the last (and the only) scenario id
+            # Otherwise, 1 single scenario can be queried using the last (and the only) scenario id,
+            # i.e. not specificing the scenario explicitly
             scenarios_manager = self.get_scenario_manager()
             for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
                 scenario_item_data  = scenario_item["data"]
@@ -481,10 +401,9 @@ class Simulator(object):
                     # This force the user to set the scenario id to query the data afterwards!
                     component_item["object_reference"].set_current_scenario_id_mandatory_flag()
 
-
-
     def plot_timing(self):
         """
+            Plots the timing
         """
         #Import seaborn to prettify the graphs if possible
         try:
@@ -517,6 +436,7 @@ class Simulator(object):
 
     def plot_engine_timing(self):
         """
+            Plots the engine timing
         """
         #Import seaborn to prettify the graphs if possible
         try:
