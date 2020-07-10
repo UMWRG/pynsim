@@ -179,7 +179,16 @@ class Component(object):
                 local_simulator = self._simulator
                 # return local_simulator.get_overall_status().get_value(local_name, name, local_status.get_current_scenario_id(), local_status.get_current_timestep())
                 return self.get_current_history_value(name)
+            elif name in self._scenario_parameters:
+                """
+                    In this point we are returning a value composing the scenario
+                """
+                #print("Name: {}, Value: {}".format(name, object.__getattribute__(self, name)))
+                pass
             else:
+                """
+                    All the rest
+                """
                 pass
         return object.__getattribute__(self, name)
 
@@ -274,6 +283,9 @@ class Component(object):
         comp_history = self._history
 
         if property_name in comp_history:
+            """
+                This is a computed property
+            """
             prop_history = comp_history[property_name]
             if len(prop_history) == 0:
                 if default_value is None:
@@ -282,8 +294,28 @@ class Component(object):
                     return default_value
             else:
                 return prop_history[ len(prop_history) - 1 ]
+
+        if property_name in self._scenario_parameters:
+            """
+                This is a scenario parameter
+            """
+            prop_history = object.__getattribute__(self, property_name)
+            # print(prop_history)
+            # print(self._status.get_current_scenario_id())
+            # print(self._status.get_current_timestep())
+            if isinstance(prop_history, dict):
+                return prop_history[str(self._status.get_current_timestep())]
+            else:
+                return prop_history
+
+
+
         else:
+            """
+                Not defined
+            """
             if default_value is None:
+                print(comp_history)
                 raise Exception(f"The property '{property_name}' is not defined!")
             else:
                 return default_value
