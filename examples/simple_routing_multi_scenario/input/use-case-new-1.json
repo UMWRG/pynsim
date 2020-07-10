@@ -13,7 +13,7 @@
       "y": 2,
       "properties": {
         "max_stor": 1e8,
-        "min_stor": 5e6,
+        "_min_stor": [ 5e6, 4e6 ],
         "init_stor": "{{self.max_stor * 0.8 }}",
         "_inflow": [{
           "0": 15,
@@ -78,7 +78,7 @@
       "y": 1,
       "properties": {
         "max_stor": 2e8,
-        "min_stor": 1e7,
+        "_min_stor": 1e7,
         "init_stor": "{{self.max_stor * 0.8}}",
         "_inflow": {
           "0": 4,
@@ -130,7 +130,7 @@
       "y": 1,
       "properties": {
         "max_stor": 1e9,
-        "min_stor": 1e7,
+        "_min_stor": 1e7,
         "init_stor": "{{self.max_stor * 0.8}}",
         "_inflow": {
           "0": 4,
@@ -169,7 +169,7 @@
       "y": 0,
       "properties": {
         "max_stor": 2e8,
-        "min_stor": 1e7,
+        "_min_stor": 1e7,
         "init_stor": "{{self.max_stor * 0.8}}",
         "_inflow": {
           "0": 4,
