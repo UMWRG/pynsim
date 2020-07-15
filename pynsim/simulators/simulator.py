@@ -391,7 +391,7 @@ class Simulator(object):
 
         logging.debug("Finished")
 
-        logging.warning("Overall %r", self.overall_status.dump())
+        # logging.warning("Overall %r", self.overall_status.dump())
 
         if self.overall_status.get_scenarios_count() > 1:
             # If the scenarios count is more than 1 the user needs to set the scenario id before getting any data
