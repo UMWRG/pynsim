@@ -56,6 +56,12 @@ class ScenariosManager(object):
 
 
     ################################################################
+    def get_full_scenarios_count(self):
+        """
+            Returns the full count of added scenarios
+        """
+        return self._multi_id.get_full_scenarios_count()
+
 
     def get_current_index(self):
         """
