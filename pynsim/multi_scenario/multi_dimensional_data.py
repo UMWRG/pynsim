@@ -105,6 +105,14 @@ class MultiDimensionalData(object):
         self._indexes.append(0)
         self._objects_list.append(new_object)
 
+    def get_full_scenarios_count(self):
+
+        total_count=1
+        for obj in self._objects_list:
+            total_count = total_count * obj.data_length()
+
+        return total_count
+
     def get_next_data(self):
         """
             Gets the current indexed data
