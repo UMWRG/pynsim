@@ -135,6 +135,13 @@ class Simulator(object):
         """
         return self.scenarios_manager
 
+    def get_full_scenarios_count(self):
+        """
+            Returns the "scenario manager" get_full_scenarios_count property
+        """
+        return self.scenarios_manager.get_full_scenarios_count()
+
+
     def get_overall_status(self):
         """
             Returns the "overall status" object
@@ -379,7 +386,7 @@ class Simulator(object):
             raise Exception("You must select a valid value for the loop_priority: 'timestep', 'scenario'")
 
         for engine in self.engines:
-            logging.debug("Teearing Down engine %s", engine.name)
+            logging.debug("Tearing Down engine %s", engine.name)
             engine.teardown()
 
         logging.debug("Finished")
