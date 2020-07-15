@@ -386,11 +386,20 @@ class Component(object):
     def __repr__(self):
         return "Component(name=%s)" % (self.name)
 
-    def setup(self, timestamp):
+    # def setup(self, timestamp):
+    #     """
+    #         Setup function to be overwritten in each component implementation
+    #     """
+    #     pass
+
+    def setup(self, t):
         """
             Setup function to be overwritten in each component implementation
+            This is mandatory in the subclass id overloading the property:
+            super().setup(t)
         """
-        pass
+        for prop_name in self._scenario_parameters:
+            setattr(self, self._scenario_parameters[prop_name], self.get_current_history_value(prop_name))
 
 
     def __copy__(self):
