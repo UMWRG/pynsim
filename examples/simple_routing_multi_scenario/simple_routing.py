@@ -93,6 +93,10 @@ show_status = ShowStatus(network)
 simulation.set_loop_priority("timestep")
 simulation.add_engine(show_status)
 
+print("+--------------------------------------")
+print(f"| Total Number of Scenarios: {simulation.get_full_scenarios_count()}")
+print("+--------------------------------------")
+
 simulation.start()
 
 props = ['S', 'actual_release', 'min_stor', 'max_stor', 'init_stor', 'target_release', 'inflow']
