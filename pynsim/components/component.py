@@ -102,6 +102,8 @@ class Component(object):
                 setattr(self, k, v)
             elif k in self._properties:
                 setattr(self, k, v)
+            elif k in self._scenario_parameters:
+                setattr(self, k, v)
             else:
                 raise Exception("Invalid property %s. Allowed properties are: %s" % (k, self._properties.keys()))
 
