@@ -215,8 +215,9 @@ class OverallStatus(object):
                         scenario_serial_id = str(self.defined_scenarios_mappings[scenario_index])
                         if scenario_serial_id not in export_data["scenarios"]:
                             export_data["scenarios"][scenario_serial_id] = dict()
-                            export_data["scenarios"][scenario_serial_id]["index"] =scenario_index
-                            export_data["scenarios"][scenario_serial_id]["timesteps"] = dict()
+                            export_data["scenarios"][scenario_serial_id]["serial_index"] = scenario_serial_id
+                            export_data["scenarios"][scenario_serial_id]["tuple_index"]  = scenario_index
+                            export_data["scenarios"][scenario_serial_id]["timesteps"]    = dict()
 
                         scenario_values = property_status[scenario_index]
                         for timestep_key in scenario_values:
