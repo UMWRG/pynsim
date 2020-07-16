@@ -24,6 +24,8 @@ import json
 from datetime import datetime
 import os
 
+import pprint
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s:%(levelname)s:%(name)s:%(lineno)s:%(message)s"
@@ -184,6 +186,16 @@ class Simulator(object):
         """
         return self.overall_status.export_status_indexed_by_scenarios()
 
+    def export_status_indexed_by_scenarios_to_file(self, filepath):
+        """
+            Save the exported data to a file
+        """
+        file = open(filepath,"w")
+
+        data = self.export_status_indexed_by_scenarios()
+        file.write(pprint.pformat(data))
+
+        file.close()
 
     def initialise(self):
         """
