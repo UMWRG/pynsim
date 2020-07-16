@@ -105,7 +105,9 @@ simulation.start()
 
 # print(simulation.overall_status.dump())
 #
-# print(json.dumps(simulation.overall_status.export_status_indexed_by_scenarios()))
+# print(json.dumps(simulation.export_status_indexed_by_scenarios()))
+
+simulation.export_status_indexed_by_scenarios_to_file("./output.json")
 
 props = ['S', 'actual_release', 'min_stor', 'max_stor', 'init_stor', 'target_release', 'inflow']
 
