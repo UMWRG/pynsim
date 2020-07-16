@@ -21,6 +21,8 @@ class ShowStatus(Engine):
         """
             execute the show
         """
+        # logger.warning("This is the current scenario index: {}".format(self.simulator.get_current_scenario_index()))
+        logger.warning("This is the current scenario serial index: {}".format(self.simulator.get_current_scenario_serial_index()))
         if self.simulator.loop_priority == "scenario":
             logger.warning("This is the timestep {} of the scenario {}".format(self.simulator.current_timestep, self.simulator.current_scenario_id))
         elif self.simulator.loop_priority == "timestep":
