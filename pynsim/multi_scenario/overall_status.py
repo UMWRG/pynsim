@@ -30,6 +30,9 @@ class OverallStatus(object):
 
         self.defined_scenarios_list = []
 
+        # Indexed by scenario tuple returns the index of the "defined_scenarios_list" array
+        self.defined_scenarios_mappings = dict()
+
     def set_value(self, component_name, property_name, scenario_index, timestep_value, property_value):
         """
             Method used to set the value of the item identified by the tuple:
@@ -47,6 +50,7 @@ class OverallStatus(object):
             self.status[component_name][property_name]["_default_"] = property_value
         else:
             if scenario_index not in self.defined_scenarios_list:
+                self.defined_scenarios_mappings[scenario_index] = len(self.defined_scenarios_list)
                 self.defined_scenarios_list.append(scenario_index)
 
 
@@ -168,4 +172,62 @@ class OverallStatus(object):
         """
             Return the full status
         """
-        return self.status
+        return json.dumps(self.status)
+
+    def get_scenarios_indexes_list(self):
+        """
+            Returns all the defined scenario indexes
+        """
+        return self.defined_scenarios_list
+
+    def export_status_indexed_by_scenarios(self):
+        """
+            Exports the status indexing it :
+            - "constants" | "scenarios"
+            for "scenarios" items
+            - <scenario id (num)>
+            - "index" | "timesteps"
+            for "timesteps" items
+            - <timestep>
+            - <component name>
+            - <property name>
+        """
+        export_data = dict()
+        for component_name in self.status:
+            component_status = self.status[component_name]
+            for property_name in component_status:
+                property_status = component_status[property_name]
+                for scenario_index in property_status:
+                    if scenario_index == "_default_":
+                        # Just one value
+                        if "constants" not in export_data:
+                            export_data["constants"] = dict()
+
+                        if component_name not in export_data["constants"]:
+                            export_data["constants"][component_name] = dict()
+
+                        export_data["constants"][component_name][property_name] = property_status[scenario_index]
+                    else:
+                        # It is a scenario index
+                        if "scenarios" not in export_data:
+                            export_data["scenarios"] = dict()
+
+                        scenario_serial_id = str(self.defined_scenarios_mappings[scenario_index])
+                        if scenario_serial_id not in export_data["scenarios"]:
+                            export_data["scenarios"][scenario_serial_id] = dict()
+                            export_data["scenarios"][scenario_serial_id]["index"] =scenario_index
+                            export_data["scenarios"][scenario_serial_id]["timesteps"] = dict()
+
+                        scenario_values = property_status[scenario_index]
+                        for timestep_key in scenario_values:
+                            timestep_value = scenario_values[timestep_key]
+
+                            if timestep_key not in export_data["scenarios"][scenario_serial_id]["timesteps"]:
+                                export_data["scenarios"][scenario_serial_id]["timesteps"][timestep_key] = dict()
+
+                            if component_name not in export_data["scenarios"][scenario_serial_id]["timesteps"][timestep_key]:
+                                export_data["scenarios"][scenario_serial_id]["timesteps"][timestep_key][component_name] = dict()
+
+                            export_data["scenarios"][scenario_serial_id]["timesteps"][timestep_key][component_name][property_name] = timestep_value
+
+        return export_data
