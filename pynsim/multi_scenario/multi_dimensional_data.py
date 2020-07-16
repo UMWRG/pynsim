@@ -229,16 +229,16 @@ class MultiDimensionalData(object):
         """
             Returns the current scenario id as a tuple in order to be used as index of a dict, if available, StopIteration otherwise
         """
-        if self._iteration_finished:
-            raise StopIteration
+        # if self._iteration_finished:
+        #     raise StopIteration
         return ','.join([str(x) for x in self._indexes])
 
     def get_current_index(self):
         """
             Returns the current index, if available, StopIteration otherwise
         """
-        if self._iteration_finished:
-            raise StopIteration
+        # if self._iteration_finished:
+        #     raise StopIteration
         return self._indexes.copy()
 
     def get_current_iteration_count(self):
