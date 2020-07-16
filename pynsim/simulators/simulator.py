@@ -108,6 +108,9 @@ class Simulator(object):
         # This is the current scenario id, set by the iterations
         self.current_scenario_id = None
 
+        # This is the current scenario id, set by the iterations. goes from 1 to the last scenario count
+        self.current_scenario_serial_index = 0
+
         # This flag allows to decide if saving the component history or just having the last timestep iteraion data at the end of the simulation
         self._save_components_history = save_components_history
         # This is to manage all the scenarios
@@ -141,6 +144,13 @@ class Simulator(object):
         """
         return self.scenarios_manager.get_full_scenarios_count()
 
+    def get_current_scenario_index(self):
+        """
+            Returns the "current scenario index" property from multiscenario object
+            !! deprecated !!!
+        """
+        return self.scenarios_manager.get_current_index()
+
 
     def get_overall_status(self):
         """
@@ -153,6 +163,12 @@ class Simulator(object):
             Returns the number of defined scenarios
         """
         return self.overall_status.get_scenarios_count()
+
+    def get_results_scenarios_indexes_list(self):
+        """
+            Returns all the defined scenarios indexes defined by overall
+        """
+        return self.overall_status.get_scenarios_indexes_list()
 
     def initialise(self):
         """
@@ -219,6 +235,7 @@ class Simulator(object):
                 Iteration over all the scenarios
             """
             scenarios_manager = self.get_scenario_manager()
+            self.current_scenario_serial_index = 0
             for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
                 """
                     Gets current scenario data and index
@@ -239,6 +256,10 @@ class Simulator(object):
                     scenario_item_data
                 )
 
+                # Incrementing scenario counter
+                self.current_scenario_serial_index = self.current_scenario_serial_index + 1
+
+
     """=========================================="""
 
     def iterate_timesteps_for_scenario(self, tqdm):
@@ -249,6 +270,7 @@ class Simulator(object):
             Iteration over all the scenarios
         """
         scenarios_manager = self.get_scenario_manager()
+        self.current_scenario_serial_index = 0
         for scenario_item in scenarios_manager.get_scenarios_iterator("full"):
             """
                 Gets current scenario data and index
@@ -285,6 +307,15 @@ class Simulator(object):
 
                 self.run_single_simulation_step(idx, timestep, scenario_id, scenario_item_data)
 
+            # Incrementing scenario counter
+            self.current_scenario_serial_index = self.current_scenario_serial_index + 1
+
+
+    def get_current_scenario_serial_index(self):
+        """
+            Returns the current scenario serial index
+        """
+        return self.current_scenario_serial_index
 
     def run_single_simulation_step(self, idx=None, timestep=None, scenario_id=None, scenario_item_data=None):
         """
