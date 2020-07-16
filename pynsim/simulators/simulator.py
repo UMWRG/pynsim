@@ -170,6 +170,21 @@ class Simulator(object):
         """
         return self.overall_status.get_scenarios_indexes_list()
 
+    def export_status_indexed_by_scenarios(self):
+        """
+            Exports the status indexing it :
+            - "constants" | "scenarios"
+            for "scenarios" items
+            - <scenario id (num)>
+            - "index" | "timesteps"
+            for "timesteps" items
+            - <timestep>
+            - <component name>
+            - <property name>
+        """
+        return self.overall_status.export_status_indexed_by_scenarios()
+
+
     def initialise(self):
         """
             Init method
