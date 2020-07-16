@@ -99,6 +99,14 @@ print("+--------------------------------------")
 
 simulation.start()
 
+
+
+# print(simulation.get_results_scenarios_indexes_list())
+
+# print(simulation.overall_status.dump())
+#
+# print(json.dumps(simulation.overall_status.export_status_indexed_by_scenarios()))
+
 props = ['S', 'actual_release', 'min_stor', 'max_stor', 'init_stor', 'target_release', 'inflow']
 
 # Plot results
