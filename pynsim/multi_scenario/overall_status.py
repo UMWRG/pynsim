@@ -131,9 +131,15 @@ class OverallStatus(object):
         return_array = []
         history_dict = self.get_property_history(component_name, property_name, scenario_index)
 
-        if isinstance(history_dict, dict) or isinstance(history_dict, list):
+        if isinstance(history_dict, dict):
             for item in history_dict:
                 attr = history_dict[item]
+                if isinstance(attr, dict) or isinstance(attr, list):
+                    return_array.append(deepcopy(attr))
+                else:
+                    return_array.append(attr)
+        elif isinstance(history_dict, list):
+            for attr in history_dict:
                 if isinstance(attr, dict) or isinstance(attr, list):
                     return_array.append(deepcopy(attr))
                 else:
